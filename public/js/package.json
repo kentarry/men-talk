@@ -1,0 +1,4 @@
+{
+  "type": "module",
+  "//": "Marks the browser ES modules in this folder as ESM so Node-based self-tests can import crypto.js directly. The server never imports these; the browser loads them via <script type=module>."
+}

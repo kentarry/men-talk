@@ -1,0 +1,11 @@
+# Render Blueprint — one-click deploy for the secure chat relay.
+# Render sets PORT via env; server.js already honors process.env.PORT.
+# The free plan sleeps after ~15 min idle and wakes (~1 min) on the next visit.
+services:
+  - type: web
+    name: secure-chat
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: node server/server.js
+    healthCheckPath: /

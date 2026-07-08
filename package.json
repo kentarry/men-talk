@@ -1,0 +1,15 @@
+{
+  "name": "secure-chat",
+  "version": "1.0.0",
+  "private": true,
+  "description": "端對端加密、零知識中繼、可安裝於手機的私密聊天室（零外部相依）。",
+  "scripts": {
+    "start": "node server/server.js",
+    "share": "node tools/share.js",
+    "icons": "node tools/gen-icons.js",
+    "test": "node tools/selftest.mjs",
+    "test:fs": "node tools/test-fs.mjs",
+    "test:relay": "node tools/test-relay.mjs"
+  },
+  "engines": { "node": ">=18" }
+}

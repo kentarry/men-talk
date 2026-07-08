@@ -1,0 +1,10 @@
+# Personal local config (tunnel domain binding) — not part of the app
+share.config.json
+
+# Node
+node_modules/
+npm-debug.log*
+
+# OS / editor noise
+Thumbs.db
+.DS_Store

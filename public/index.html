@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+  <meta name="color-scheme" content="dark light" />
+  <meta name="theme-color" content="#0b1220" />
+  <meta name="referrer" content="no-referrer" />
+  <title>密聊 · 端對端加密聊天室</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="icon" href="icons/favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+<body>
+  <!-- Insecure-context / warning banner -->
+  <div id="banner" class="banner hidden" role="alert"></div>
+
+  <!-- ============ Welcome screen (shown when no room secret in URL) ======= -->
+  <main id="welcome" class="screen welcome hidden">
+    <div class="welcome-card">
+      <div class="logo" aria-hidden="true">🔒</div>
+      <h1>密聊</h1>
+      <p class="tagline">端對端加密 · 無需帳號 · 手機可用</p>
+      <ul class="features">
+        <li>🔑 訊息在你的裝置上加密，伺服器與網路只看到亂碼</li>
+        <li>🔗 用一條連結把整個房間分享給朋友</li>
+        <li>👥 同一個連結 = 同一個頻道，多人一起聊</li>
+        <li>💨 可設定訊息自動消失，一鍵清除本機資料</li>
+      </ul>
+      <button id="createRoom" class="btn btn-primary btn-lg">建立加密聊天室</button>
+      <p class="fine">金鑰只存在於連結的 <code>#</code> 之後，永遠不會送到伺服器。</p>
+    </div>
+  </main>
+
+  <!-- ============ Chat screen ============================================= -->
+  <div id="chat" class="screen chat hidden">
+    <header class="topbar">
+      <div class="topbar-left">
+        <span id="statusDot" class="status-dot" role="status" aria-label="連線狀態" title="連線狀態"></span>
+        <div class="room-meta">
+          <strong>加密聊天室</strong>
+          <span id="presence" class="presence">— 人在線</span>
+        </div>
+      </div>
+      <div class="topbar-right">
+        <button id="btnInvite" class="icon-btn" title="複製邀請連結" aria-label="複製邀請連結">🔗</button>
+        <button id="btnSettings" class="icon-btn" title="設定" aria-label="設定">⚙️</button>
+      </div>
+    </header>
+
+    <div id="messages" class="messages" aria-live="polite"></div>
+
+    <div id="dropHint" class="drop-hint hidden">放開以傳送加密檔案</div>
+
+    <form id="composer" class="composer" autocomplete="off">
+      <button type="button" id="btnAttach" class="icon-btn" title="傳送加密檔案" aria-label="傳送檔案">📎</button>
+      <input type="file" id="fileInput" class="hidden" />
+      <textarea id="input" class="input" rows="1" placeholder="輸入訊息…（Enter 送出，Shift+Enter 換行）" maxlength="8000"></textarea>
+      <button type="submit" id="btnSend" class="btn btn-primary btn-send" aria-label="送出">➤</button>
+    </form>
+  </div>
+
+  <!-- ============ Settings drawer ========================================= -->
+  <div id="drawer" class="drawer hidden" role="dialog" aria-modal="true" aria-label="設定">
+    <div class="drawer-panel">
+      <div class="drawer-head">
+        <h2>設定與安全</h2>
+        <button id="drawerClose" class="icon-btn" aria-label="關閉">✕</button>
+      </div>
+
+      <label class="field">
+        <span>你的暱稱（僅存在本機）</span>
+        <input type="text" id="nameInput" maxlength="24" placeholder="匿名" />
+      </label>
+
+      <label class="field">
+        <span>訊息自動消失</span>
+        <select id="ttlSelect">
+          <option value="0">關閉（不自動消失）</option>
+          <option value="30">30 秒</option>
+          <option value="300">5 分鐘</option>
+          <option value="3600">1 小時</option>
+          <option value="86400">1 天</option>
+        </select>
+      </label>
+
+      <div class="field">
+        <span>安全驗證碼（Safety Code）</span>
+        <code id="fingerprint" class="fingerprint">····</code>
+        <p class="fine">與對方當面或用其他管道核對這串碼，一致代表你們在同一個未被竄改的房間。</p>
+      </div>
+
+      <div class="field">
+        <span>本機密碼鎖（App Lock）</span>
+        <div id="lockControls" class="lock-controls"></div>
+        <p class="fine">避免手機被他人順手拿走時直接看到聊天；切到背景會自動上鎖。這是本機保護，<strong>無法取代「連結即權限」</strong>——持有連結者仍可解密。</p>
+      </div>
+
+      <div class="drawer-actions">
+        <button id="btnCopyLink" class="btn">複製邀請連結</button>
+        <button id="btnPanic" class="btn btn-danger">🧨 立即清除本機資料</button>
+      </div>
+
+      <details class="security-note">
+        <summary>安全須知（請閱讀）</summary>
+        <ul>
+          <li>邀請連結內含解密金鑰，請透過<strong>安全管道</strong>分享，別貼在會被記錄的地方。</li>
+          <li>含金鑰的網址會被記錄在<strong>瀏覽器歷史與網址列自動完成</strong>；若啟用瀏覽器同步，金鑰可能被上傳雲端。高敏感情境請用<strong>無痕視窗</strong>，用畢自行清除瀏覽器歷史（「清除本機資料」無法清除瀏覽器層級的歷史）。</li>
+          <li>真正的隱私請使用<strong>個人裝置與個人網路</strong>。公司配發的裝置可能有端點監控，能側錄螢幕與鍵盤，任何 App 都擋不住。</li>
+          <li>本工具用於保護個人私訊，請勿用於外洩機密或規避合法稽核。</li>
+          <li>伺服器看得到：頻道代號、訊息大小、時間、IP、線上人數（看不到內容）。訊息預設不在伺服器保存；關閉分頁或清除資料後即無法復原。</li>
+        </ul>
+      </details>
+    </div>
+    <div id="drawerBackdrop" class="drawer-backdrop"></div>
+  </div>
+
+  <!-- Invite modal -->
+  <div id="inviteModal" class="modal hidden" role="dialog" aria-modal="true" aria-label="邀請連結">
+    <div class="modal-panel">
+      <h3>邀請加入</h3>
+      <p class="fine">任何拿到此連結的人都能讀取本房間訊息，請小心分享。</p>
+      <div id="inviteQrWrap" class="qr-wrap">
+        <canvas id="inviteQr" class="qr" aria-label="邀請 QR 碼"></canvas>
+        <p class="fine qr-hint">用另一支手機的相機直接掃描（不經剪貼簿、不留連結，最安全）。</p>
+      </div>
+      <textarea id="inviteLink" class="invite-link" readonly rows="3"></textarea>
+      <div class="modal-actions">
+        <button id="inviteCopy" class="btn btn-primary">複製連結</button>
+        <button id="inviteClose" class="btn">關閉</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- App-lock screen (covers everything when this device is locked) -->
+  <div id="lockScreen" class="lock-screen hidden" role="dialog" aria-modal="true" aria-label="已鎖定">
+    <div class="lock-card">
+      <div class="logo" aria-hidden="true">🔒</div>
+      <h2>已鎖定</h2>
+      <p class="fine">輸入本機密碼以解鎖此裝置上的聊天。</p>
+      <form id="lockForm" autocomplete="off">
+        <input type="password" id="lockInput" class="lock-input" placeholder="本機密碼"
+               autocomplete="current-password" aria-label="本機密碼" />
+        <button type="submit" class="btn btn-primary btn-lg">解鎖</button>
+      </form>
+      <p id="lockError" class="lock-error hidden" role="alert">密碼錯誤，請再試一次</p>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden" role="status"></div>
+
+  <script type="module" src="js/app.js"></script>
+</body>
+</html>
