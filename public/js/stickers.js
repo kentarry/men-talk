@@ -2,9 +2,9 @@
 // so a sticker message only carries its id (tiny, E2EE-friendly); received ids
 // are used purely as lookup keys and never interpreted as markup.
 //
-// 8 packs organised by everyday CHAT SCENE + 2025-26 台灣流行語 (based on LINE
-// store trend research): 日常回覆 / 已讀敷衍 / 嗆人白爛 / 厭世上班 / 撒嬌愛心 /
-// 應援吹捧 / 祝福問候 / 疑惑吐槽. Each pack keeps its own original character.
+// 9 packs organised by everyday CHAT SCENE + 台灣流行語/迷因 (based on LINE
+// store trend research): 日常回覆 / 已讀敷衍 / 嗆人白爛 / 迷因爛梗 / 厭世上班 /
+// 撒嬌愛心 / 應援吹捧 / 祝福問候 / 疑惑吐槽. Each pack keeps its own character.
 // Animation: parts carry st-* classes; the keyframes live in styles.css and
 // only apply where the SVG is inline in the DOM (chat bubbles + picker).
 // prefers-reduced-motion users get static stickers via the global CSS rule.
@@ -94,6 +94,14 @@ const BODIES = {
     `<path d="M27 48 a33 28 0 0 1 66 0" fill="none" stroke="#4a332a" stroke-width="11" stroke-linecap="round"/>` +
     `<path d="M38 37 q9 -4 18 1 M82 37 q-9 -4 -18 1" ${line(4.5, '#4a332a')}/>` +
     blush(36, 84, 60),
+  // 柴犬 doge（迷因爛梗）：尖立耳 + 白吻部 + 黑鼻，迷因界門面
+  shiba:
+    `<path d="M28 33 L33 7 L51 26 Z" fill="#e6b45f" stroke="#c9963e" stroke-width="2.5" stroke-linejoin="round"/>` +
+    `<path d="M92 33 L87 7 L69 26 Z" fill="#e6b45f" stroke="#c9963e" stroke-width="2.5" stroke-linejoin="round"/>` +
+    `<ellipse cx="60" cy="55" rx="35" ry="31" fill="#f2cf8f" stroke="#c9963e" stroke-width="2.5"/>` +
+    `<ellipse cx="60" cy="68" rx="22" ry="15" fill="#fbf3e2"/>` +
+    `<ellipse cx="60" cy="55" rx="4.2" ry="3" fill="#4a2f1c"/>` +
+    blush(34, 86, 63),
 };
 
 const EYES = {
@@ -312,7 +320,20 @@ export const STICKER_PACKS = [
     ['ohreally', '是喔', 'st-sway', EYES.roll + MOUTH.smirk, PROP.dots],
     ['eyeroll', '翻白眼', 'st-tilt', EYES.roll + MOUTH.flat],
   ]),
-  // 4) 厭世上班 — 上班章魚，社畜苦悶（想離職/躺平/連滾帶爬…）
+  // 4) 迷因爛梗 — 柴犬 doge，國民級網路迷因（我就爛/真的假的/芭比Q…）
+  pack('meme', '迷因爛梗', '💀', '#4f5560', BODIES.shiba, [
+    ['sucks', '我就爛', 'st-sway', EYES.dead + MOUTH.flat, PROP.dots],
+    ['giveup', '擺爛', 'st-breathe', EYES.tired + MOUTH.flat, PROP.zzz],
+    ['forreal', '真的假的', 'st-tilt', EYES.wide + MOUTH.o, PROP.qmarks],
+    ['bbq', '芭比Q', 'st-shake', EYES.dead + MOUTH.wavy, PROP.fire, PROP.sweat],
+    ['nope', '母湯', 'st-shake', EYES.angry + MOUTH.gah, PROP.boltRed],
+    ['thankq', '栓Q', 'st-bob-slow', EYES.tired + MOUTH.flat, PROP.thumb],
+    ['broke', '破防', 'st-bob-slow', EYES.tired + MOUTH.wavy + FACEX.streams],
+    ['cringe', '社死', 'st-shake', EYES.dizzy + MOUTH.wavy + FACEX.blushMore, PROP.sweat],
+    ['sarcasm', '好棒棒', 'st-tilt', EYES.roll + MOUTH.smirk, PROP.thumb],
+    ['emo', 'emo', 'st-breathe', EYES.tired + MOUTH.frown, PROP.dots],
+  ]),
+  // 5) 厭世上班 — 上班章魚，社畜苦悶（想離職/躺平/連滾帶爬…）
   pack('office', '厭世上班', '😩', '#3f6bd6', BODIES.octopus, [
     ['quit', '想離職', 'st-bob-slow', EYES.dead + MOUTH.wavy, PROP.laptop],
     ['nowork', '不想上班', 'st-sway', EYES.tired + MOUTH.frown, PROP.sweat],
@@ -325,7 +346,7 @@ export const STICKER_PACKS = [
     ['collapse', '崩潰', 'st-shake', EYES.dead + MOUTH.shout, PROP.vein, PROP.sweat],
     ['done', '厭世', 'st-breathe', EYES.dead + MOUTH.flat, PROP.dots],
   ]),
-  // 5) 撒嬌愛心 — 美麗貓咪，情侶/朋朋撒嬌（抱抱/接住我/討拍…）
+  // 6) 撒嬌愛心 — 美麗貓咪，情侶/朋朋撒嬌（抱抱/接住我/討拍…）
   pack('love', '撒嬌愛心', '🥰', '#e0679a', BODIES.prettycat, [
     ['missyou', '想你了', 'st-bob-slow', EYES.shiny + MOUTH.uwu, PROP.hearts],
     ['hug', '抱抱', 'st-bob', EYES.plead + MOUTH.o, PROP.hearts],
@@ -338,7 +359,7 @@ export const STICKER_PACKS = [
     ['soothe', '秀秀', 'st-bob-slow', EYES.lash + MOUTH.smile, PROP.hearts],
     ['mylove', '最愛你', 'st-bob', EYES.heart + MOUTH.uwu, PROP.hearts],
   ]),
-  // 6) 應援吹捧 — 威武虎虎，浮誇吹捧（太頂了/超派/上車囉…）
+  // 7) 應援吹捧 — 威武虎虎，浮誇吹捧（太頂了/超派/上車囉…）
   pack('hype', '應援吹捧', '🙌', '#e0891e', BODIES.tiger, [
     ['peak', '太頂了', 'st-jump', EYES.starry + MOUTH.d, PROP.crown, PROP.arrowUp],
     ['hardcore', '超派', 'st-shake', EYES.angry + MOUTH.shout, PROP.fire],
@@ -351,7 +372,7 @@ export const STICKER_PACKS = [
     ['praise', '爆讚', 'st-bob', EYES.happy + MOUTH.grin, PROP.thumb, PROP.spark],
     ['crazy', '狂', 'st-shake', EYES.shades + MOUTH.smirk, PROP.fire, PROP.sparkR],
   ]),
-  // 7) 祝福問候 — 溫暖小熊，過年/日常問候（早安/新年快樂/辛苦了…）
+  // 8) 祝福問候 — 溫暖小熊，過年/日常問候（早安/新年快樂/辛苦了…）
   pack('bless', '祝福問候', '✨', '#8a5cd8', BODIES.bear, [
     ['morning', '早安', 'st-bob', EYES.happy + MOUTH.smile, PROP.sun],
     ['night', '晚安', 'st-breathe', EYES.closed + MOUTH.smile, PROP.zzz, PROP.moon],
@@ -364,7 +385,7 @@ export const STICKER_PACKS = [
     ['weekend', '週末愉快', 'st-jump', EYES.happy + MOUTH.grin, PROP.confetti, PROP.spark],
     ['thankyou', '謝謝你', 'st-bob', EYES.shiny + MOUTH.smile, PROP.hearts],
   ]),
-  // 8) 疑惑吐槽 — 呆萌鼠鼠，黑人問號吐槽（蛤？/傻眼/是在哈囉…）
+  // 9) 疑惑吐槽 — 呆萌鼠鼠，黑人問號吐槽（蛤？/傻眼/是在哈囉…）
   pack('huh', '疑惑吐槽', '🤨', '#2f7fd6', BODIES.hamster, [
     ['ha', '蛤？', 'st-tilt', EYES.wide + MOUTH.o, PROP.question],
     ['wut', '傻眼', 'st-shake', EYES.wide + MOUTH.flat, PROP.qmarks],
