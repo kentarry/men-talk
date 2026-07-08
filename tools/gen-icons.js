@@ -1,6 +1,6 @@
 'use strict';
 // gen-icons.js — generate PWA PNG icons with zero dependencies (Node zlib).
-// Draws the "Ex" mark: navy E + red x on white. Run: node tools/gen-icons.js
+// Draws the "RX" mark: blue R + red X on white. Run: node tools/gen-icons.js
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
@@ -8,15 +8,7 @@ const zlib = require('zlib');
 const OUT = path.join(__dirname, '..', 'public', 'icons');
 fs.mkdirSync(OUT, { recursive: true });
 
-const BG = [255, 255, 255], NAVY = [27, 33, 102], RED = [225, 17, 28];
-
-function inRoundRect(px, py, x0, y0, x1, y1, r) {
-  if (px < x0 || px > x1 || py < y0 || py > y1) return false;
-  const ix0 = x0 + r, ix1 = x1 - r, iy0 = y0 + r, iy1 = y1 - r;
-  let cx = Math.max(ix0, Math.min(px, ix1));
-  let cy = Math.max(iy0, Math.min(py, iy1));
-  return Math.hypot(px - cx, py - cy) <= r;
-}
+const BG = [255, 255, 255], BLUE = [45, 47, 174], RED = [225, 17, 28];
 
 function inCapsule(px, py, ax, ay, bx, by, r) {
   const dx = bx - ax, dy = by - ay;
@@ -24,22 +16,27 @@ function inCapsule(px, py, ax, ay, bx, by, r) {
   return Math.hypot(px - (ax + t * dx), py - (ay + t * dy)) <= r;
 }
 
+function inHalfRing(px, py, cx, cy, R, r) {
+  return px >= cx && Math.abs(Math.hypot(px - cx, py - cy) - R) <= r;
+}
+
 function drawIcon(S, maskable) {
   const k = maskable ? 0.78 : 1;
   const sc = (v) => 50 + (v - 50) * k;
   const scr = (r) => r * k;
-  // "E" glyph: a vertical stem + three horizontal bars, navy.
-  // Coordinates on a 0..100 canvas; [x0, y0, x1, y1, radius].
-  const bars = [
-    [14, 22, 27, 78, 3], // stem
-    [14, 22, 48, 34, 3], // top bar
-    [14, 44, 43, 56, 3], // middle bar
-    [14, 66, 48, 78, 3], // bottom bar
+  // "R" glyph as round-capped strokes, blue; [ax, ay, bx, by, radius].
+  const rStrokes = [
+    [21, 26, 21, 76, 6.5], // stem
+    [21, 26, 34, 26, 6.5], // top bar
+    [34, 50, 21, 50, 6.5], // bowl bottom
+    [32, 50, 46, 76, 6.5], // leg
   ];
-  // "x" glyph: two diagonal strokes, red; [ax, ay, bx, by, radius].
-  const strokes = [
-    [57, 34, 87, 72, 6.5],
-    [87, 34, 57, 72, 6.5],
+  // Bowl arc: right half-ring; [cx, cy, R, radius].
+  const rBowl = [34, 38, 12, 6.5];
+  // "X" glyph: two diagonal strokes, red.
+  const xStrokes = [
+    [60, 28, 87, 76, 6.5],
+    [87, 28, 60, 76, 6.5],
   ];
 
   const data = new Uint8Array(S * S * 4);
@@ -47,11 +44,12 @@ function drawIcon(S, maskable) {
     for (let x = 0; x < S; x++) {
       const px = 100 * (x + 0.5) / S, py = 100 * (y + 0.5) / S;
       let c = BG;
-      for (const [x0, y0, x1, y1, r] of bars) {
-        if (inRoundRect(px, py, sc(x0), sc(y0), sc(x1), sc(y1), scr(r))) { c = NAVY; break; }
+      for (const [ax, ay, bx, by, r] of rStrokes) {
+        if (inCapsule(px, py, sc(ax), sc(ay), sc(bx), sc(by), scr(r))) { c = BLUE; break; }
       }
+      if (c === BG && inHalfRing(px, py, sc(rBowl[0]), sc(rBowl[1]), scr(rBowl[2]), scr(rBowl[3]))) c = BLUE;
       if (c === BG) {
-        for (const [ax, ay, bx, by, r] of strokes) {
+        for (const [ax, ay, bx, by, r] of xStrokes) {
           if (inCapsule(px, py, sc(ax), sc(ay), sc(bx), sc(by), scr(r))) { c = RED; break; }
         }
       }
