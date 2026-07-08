@@ -1,6 +1,6 @@
 // service-worker.js — offline app shell only. It NEVER stores messages, keys,
 // or anything from the WebSocket; those never pass through fetch handlers.
-const CACHE = 'securechat-shell-v7';
+const CACHE = 'securechat-shell-v8';
 const SHELL = [
   './',
   'index.html',

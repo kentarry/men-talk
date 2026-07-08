@@ -148,6 +148,62 @@ body {
 }
 
 /* ---------- stickers ---------- */
+/* Animations for sticker SVG parts (st-* classes come from js/stickers.js).
+   They only run where the SVG is inline in the DOM; the global
+   prefers-reduced-motion rule above disables them automatically. */
+.sticker-body [class*="st-"], .sticker-item [class*="st-"] {
+  transform-box: fill-box; transform-origin: center;
+}
+.st-bob { animation: st-bob 1.6s ease-in-out infinite; }
+.st-bob-slow { animation: st-bob 2.8s ease-in-out infinite; }
+.st-jump { animation: st-jump 1.1s ease-in-out infinite; }
+.st-shake { animation: st-shake .45s ease-in-out infinite; }
+.st-sway { animation: st-sway 2.6s ease-in-out infinite; }
+.st-wiggle { animation: st-wiggle 1.4s ease-in-out infinite; }
+.st-bow { transform-origin: center bottom; animation: st-bow 2s ease-in-out infinite; }
+.st-breathe { animation: st-breathe 2.6s ease-in-out infinite; }
+.st-tilt { animation: st-tilt 2.2s ease-in-out infinite; }
+.st-floaty { animation: st-floaty 2s ease-in-out infinite; }
+.st-twinkle { animation: st-twinkle 1.2s ease-in-out infinite; }
+.st-drip { animation: st-drip 1.5s ease-in infinite; }
+.st-cheers { animation: st-cheers 1s ease-in-out infinite; }
+.st-pump { animation: st-pump .9s ease-in-out infinite; }
+.st-dribble { animation: st-dribble .6s ease-in-out infinite; }
+.st-pop { animation: st-pop 1s ease-in-out infinite; }
+.st-swim { animation: st-swim 2.4s ease-in-out infinite; }
+.st-blink { animation: st-blink 1s steps(2, jump-none) infinite; }
+.st-dash { animation: st-dash .5s linear infinite; }
+.st-flip { animation: st-flip 2.2s ease-in-out infinite; }
+.st-mash { animation: st-shake .3s ease-in-out infinite; }
+.st-spin { animation: st-spinny 1.6s linear infinite; }
+
+@keyframes st-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes st-jump {
+  0%, 100% { transform: translateY(0) scale(1, 1); }
+  35% { transform: translateY(-9px) scale(.98, 1.04); }
+  65% { transform: translateY(0) scale(1, 1); }
+  78% { transform: translateY(0) scale(1.06, .92); }
+  90% { transform: translateY(0) scale(1, 1); }
+}
+@keyframes st-shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-2.5px); } 75% { transform: translateX(2.5px); } }
+@keyframes st-sway { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(5deg); } }
+@keyframes st-wiggle { 0%, 100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+@keyframes st-bow { 0%, 100%, 70% { transform: rotate(0); } 30%, 50% { transform: rotate(9deg); } }
+@keyframes st-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.035); } }
+@keyframes st-tilt { 0%, 100%, 65% { transform: rotate(0); } 30%, 45% { transform: rotate(-9deg); } }
+@keyframes st-floaty { 0%, 100% { transform: translateY(0); opacity: .55; } 50% { transform: translateY(-5px); opacity: 1; } }
+@keyframes st-twinkle { 0%, 100% { transform: scale(.75); opacity: .25; } 50% { transform: scale(1.1); opacity: 1; } }
+@keyframes st-drip { 0% { transform: translateY(0); opacity: 0; } 25% { opacity: 1; } 75% { opacity: 1; } 100% { transform: translateY(11px); opacity: 0; } }
+@keyframes st-cheers { 0%, 100% { transform: rotate(-5deg); } 50% { transform: rotate(9deg); } }
+@keyframes st-pump { 0%, 100% { transform: translateY(2px); } 50% { transform: translateY(-6px); } }
+@keyframes st-dribble { 0%, 100% { transform: translateY(-5px); } 50% { transform: translateY(6px); } }
+@keyframes st-pop { 0%, 100%, 60% { transform: scale(1); } 25%, 40% { transform: scale(1.22); } }
+@keyframes st-swim { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-9px); } }
+@keyframes st-blink { 0%, 100% { opacity: 1; } 50% { opacity: .15; } }
+@keyframes st-dash { 0% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(-4px); opacity: .2; } }
+@keyframes st-flip { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(-1); } }
+@keyframes st-spinny { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
 .msg.mine.sticker, .msg.theirs.sticker { background: transparent; padding: 2px 0; }
 .msg.sticker .msg-body { white-space: normal; }
 .sticker-body svg { width: 138px; height: 138px; display: block; }
