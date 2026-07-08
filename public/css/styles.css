@@ -147,6 +147,37 @@ body {
   font-size: 18px; color: var(--text); pointer-events: none; z-index: 20;
 }
 
+/* ---------- stickers ---------- */
+.msg.mine.sticker, .msg.theirs.sticker { background: transparent; padding: 2px 0; }
+.msg.sticker .msg-body { white-space: normal; }
+.sticker-body svg { width: 138px; height: 138px; display: block; }
+
+.sticker-panel {
+  flex: 0 0 auto; display: flex; flex-direction: column; max-height: 42vh;
+  background: var(--bg-elev); border-top: 1px solid var(--line);
+}
+.sticker-tabs {
+  display: flex; gap: 4px; padding: 8px 10px 0; overflow-x: auto; flex: 0 0 auto;
+}
+.sticker-tab {
+  appearance: none; border: none; background: transparent; color: var(--text-dim);
+  padding: 8px 12px; border-radius: 10px 10px 0 0; font-size: 14px; cursor: pointer;
+  white-space: nowrap; font-family: inherit;
+}
+.sticker-tab:hover { color: var(--text); }
+.sticker-tab.active { background: var(--bg-elev2); color: var(--text); font-weight: 600; }
+.sticker-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 6px;
+  padding: 10px; overflow-y: auto; background: var(--bg-elev2);
+}
+.sticker-item {
+  appearance: none; border: none; background: transparent; border-radius: 12px;
+  cursor: pointer; padding: 4px; transition: transform .08s;
+}
+.sticker-item:hover { background: var(--bg-elev); transform: scale(1.06); }
+.sticker-item:active { transform: scale(.96); }
+.sticker-item svg { width: 100%; height: auto; display: block; }
+
 /* ---------- composer ---------- */
 .composer {
   display: flex; align-items: flex-end; gap: 8px; flex: 0 0 auto;

@@ -6,6 +6,7 @@ import {
 } from './crypto.js';
 import { GroupSession } from './session.js';
 import { drawQR } from './qr.js';
+import { STICKER_PACKS, getSticker } from './stickers.js';
 
 const MAX_FILE = 2 * 1024 * 1024; // 2 MB plaintext cap for shared files
 
@@ -31,7 +32,8 @@ const els = {};
  'input','btnSend','btnAttach','fileInput','btnInvite','btnSettings','drawer','drawerClose',
  'drawerBackdrop','nameInput','ttlSelect','fingerprint','btnCopyLink','btnPanic','toast',
  'inviteModal','inviteLink','inviteCopy','inviteClose','dropHint','inviteQr','inviteQrWrap',
- 'lockScreen','lockForm','lockInput','lockError','lockControls']
+ 'lockScreen','lockForm','lockInput','lockError','lockControls',
+ 'btnSticker','stickerPanel','stickerTabs','stickerGrid']
   .forEach((k) => { els[k] = $(k); });
 
 // ---------------------------------------------------------------------------
@@ -211,6 +213,12 @@ async function sendFile(file) {
   await transmit(obj, el);
 }
 
+async function sendSticker(sid) {
+  const obj = baseMessage({ t: 'sticker', sid });
+  const el = renderMessage(obj, true);
+  await transmit(obj, el);
+}
+
 function baseMessage(extra) {
   return Object.assign({
     id: crypto.randomUUID(),
@@ -279,6 +287,9 @@ function renderMessage(obj, mine) {
   body.className = 'msg-body';
   if (obj.t === 'file') {
     body.appendChild(renderFile(obj));
+  } else if (obj.t === 'sticker') {
+    wrap.classList.add('sticker');
+    body.appendChild(renderSticker(obj));
   } else {
     body.appendChild(linkify(String(obj.text ?? '')));
   }
@@ -342,6 +353,22 @@ function renderFile(obj) {
   return frag;
 }
 
+// Sticker rendering: the wire only carries an id; artwork always comes from
+// our own built-in library, so a peer can never inject markup through this.
+function renderSticker(obj) {
+  const s = getSticker(String(obj.sid || ''));
+  const box = document.createElement('div');
+  box.className = 'sticker-body';
+  if (s) {
+    box.innerHTML = s.svg; // trusted static asset shipped with the app
+    box.setAttribute('role', 'img');
+    box.setAttribute('aria-label', `貼圖：${s.label}`);
+  } else {
+    box.textContent = '［貼圖：此版本不支援］';
+  }
+  return box;
+}
+
 // Safe linkifier: only turns http(s):// tokens into anchors; everything else
 // is plain text nodes, so no markup from a message can execute.
 function linkify(text) {
@@ -403,6 +430,11 @@ function wireStaticUI() {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendText(); }
   });
   els.input.addEventListener('input', autoGrow);
+
+  els.btnSticker.addEventListener('click', toggleStickerPanel);
+  // Tapping back into the conversation or the text box tucks the picker away.
+  els.messages.addEventListener('click', closeStickerPanel);
+  els.input.addEventListener('focus', closeStickerPanel);
 
   els.btnAttach.addEventListener('click', () => els.fileInput.click());
   els.fileInput.addEventListener('change', () => {
@@ -668,6 +700,60 @@ function onGlobalKey(e) {
   if (e.key !== 'Escape') return;
   if (!els.drawer.classList.contains('hidden')) closeOverlay(els.drawer);
   else if (!els.inviteModal.classList.contains('hidden')) closeOverlay(els.inviteModal);
+  else if (!els.stickerPanel.classList.contains('hidden')) closeStickerPanel();
+}
+
+// ---------------------------------------------------------------------------
+// Sticker picker
+// ---------------------------------------------------------------------------
+
+let stickerPickerBuilt = false;
+
+function toggleStickerPanel() {
+  if (els.stickerPanel.classList.contains('hidden')) {
+    buildStickerPicker();
+    els.stickerPanel.classList.remove('hidden');
+    scrollToBottom();
+  } else {
+    closeStickerPanel();
+  }
+}
+
+function closeStickerPanel() {
+  els.stickerPanel.classList.add('hidden');
+}
+
+function buildStickerPicker() {
+  if (stickerPickerBuilt) return;
+  stickerPickerBuilt = true;
+  for (const p of STICKER_PACKS) {
+    const tab = document.createElement('button');
+    tab.type = 'button';
+    tab.className = 'sticker-tab';
+    tab.dataset.pack = p.id;
+    tab.textContent = `${p.icon} ${p.name}`;
+    tab.addEventListener('click', () => renderStickerGrid(p.id));
+    els.stickerTabs.appendChild(tab);
+  }
+  renderStickerGrid(STICKER_PACKS[0].id);
+}
+
+function renderStickerGrid(packId) {
+  els.stickerTabs.querySelectorAll('.sticker-tab')
+    .forEach((t) => t.classList.toggle('active', t.dataset.pack === packId));
+  els.stickerGrid.textContent = '';
+  const p = STICKER_PACKS.find((x) => x.id === packId);
+  if (!p) return;
+  for (const s of p.stickers) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'sticker-item';
+    b.title = s.label;
+    b.setAttribute('aria-label', `傳送貼圖：${s.label}`);
+    b.innerHTML = s.svg; // trusted static asset shipped with the app
+    b.addEventListener('click', () => sendSticker(s.id));
+    els.stickerGrid.appendChild(b);
+  }
 }
 
 function autoGrow() {

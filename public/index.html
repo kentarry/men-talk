@@ -53,7 +53,14 @@
 
     <div id="dropHint" class="drop-hint hidden">放開以傳送加密檔案</div>
 
+    <!-- Sticker picker (toggled by the 😊 button in the composer) -->
+    <div id="stickerPanel" class="sticker-panel hidden">
+      <div id="stickerTabs" class="sticker-tabs" role="tablist" aria-label="貼圖分類"></div>
+      <div id="stickerGrid" class="sticker-grid"></div>
+    </div>
+
     <form id="composer" class="composer" autocomplete="off">
+      <button type="button" id="btnSticker" class="icon-btn" title="傳送貼圖" aria-label="傳送貼圖">😊</button>
       <button type="button" id="btnAttach" class="icon-btn" title="傳送加密檔案" aria-label="傳送檔案">📎</button>
       <input type="file" id="fileInput" class="hidden" />
       <textarea id="input" class="input" rows="1" placeholder="輸入訊息…（Enter 送出，Shift+Enter 換行）" maxlength="8000"></textarea>
