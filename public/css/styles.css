@@ -176,6 +176,7 @@ body {
 .st-flip { animation: st-flip 2.2s ease-in-out infinite; }
 .st-mash { animation: st-shake .3s ease-in-out infinite; }
 .st-spin { animation: st-spinny 1.6s linear infinite; }
+.st-beat { animation: st-beat .9s ease-in-out infinite; }
 
 @keyframes st-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
 @keyframes st-jump {
@@ -203,6 +204,7 @@ body {
 @keyframes st-dash { 0% { transform: translateX(0); opacity: 1; } 100% { transform: translateX(-4px); opacity: .2; } }
 @keyframes st-flip { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(-1); } }
 @keyframes st-spinny { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+@keyframes st-beat { 0%, 100%, 60% { transform: scale(1); } 25% { transform: scale(1.18); } 42% { transform: scale(1.06); } }
 
 .msg.mine.sticker, .msg.theirs.sticker { background: transparent; padding: 2px 0; }
 .msg.sticker .msg-body { white-space: normal; }

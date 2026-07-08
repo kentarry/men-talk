@@ -2,7 +2,8 @@
 // so a sticker message only carries its id (tiny, E2EE-friendly); received ids
 // are used purely as lookup keys and never interpreted as markup.
 //
-// Each pack has its own original character (octopus / blue cat / bear / kid).
+// 8 packs, each with its own original character (LINE-store style: outlined
+// animal characters, ground shadow, big handwritten-style text, animated).
 // Animation: parts carry st-* classes; the keyframes live in styles.css and
 // only apply where the SVG is inline in the DOM (chat bubbles + picker).
 // prefers-reduced-motion users get static stickers via the global CSS rule.
@@ -14,32 +15,71 @@ const line = (w, c = INK) =>
 const blush = (x1, x2, y) =>
   `<circle cx="${x1}" cy="${y}" r="6" fill="#ff9a9a" opacity=".5"/><circle cx="${x2}" cy="${y}" r="6" fill="#ff9a9a" opacity=".5"/>`;
 
+const heart = (x, y, s, c = '#ff6f9c') =>
+  `<path d="M${x} ${y + s * 0.9} C ${x - s * 1.4} ${y - s * 0.3} ${x - s * 0.6} ${y - s * 1.4} ${x} ${y - s * 0.35} ` +
+  `C ${x + s * 0.6} ${y - s * 1.4} ${x + s * 1.4} ${y - s * 0.3} ${x} ${y + s * 0.9} Z" fill="${c}"/>`;
+
 // ---- pack characters (faces plug in around eyes y≈47 / mouth y≈60-68) -------
 
 const BODIES = {
-  // 章魚：圓頭 + 波浪裙擺觸手
+  // 兔兔（可愛）：長耳朵 + 粉紅內耳
+  bunny:
+    `<ellipse cx="45" cy="18" rx="8" ry="16" fill="#ffffff" stroke="#cfc4bd" stroke-width="2.5" transform="rotate(-10 45 18)"/>` +
+    `<ellipse cx="45" cy="20" rx="4" ry="10" fill="#ffc9d4" transform="rotate(-10 45 18)"/>` +
+    `<ellipse cx="75" cy="18" rx="8" ry="16" fill="#ffffff" stroke="#cfc4bd" stroke-width="2.5" transform="rotate(10 75 18)"/>` +
+    `<ellipse cx="75" cy="20" rx="4" ry="10" fill="#ffc9d4" transform="rotate(10 75 18)"/>` +
+    `<ellipse cx="60" cy="56" rx="34" ry="30" fill="#ffffff" stroke="#cfc4bd" stroke-width="2.5"/>` +
+    blush(36, 84, 62),
+  // 貓咪小姐（美麗）：尖耳 + 耳邊小花 + 鬍鬚
+  prettycat:
+    `<path d="M30 34 l4 -18 l16 8 Z" fill="#fdf0f6" stroke="#dbb8cc" stroke-width="2.5" stroke-linejoin="round"/>` +
+    `<path d="M90 34 l-4 -18 l-16 8 Z" fill="#fdf0f6" stroke="#dbb8cc" stroke-width="2.5" stroke-linejoin="round"/>` +
+    `<ellipse cx="60" cy="56" rx="34" ry="29" fill="#fdf0f6" stroke="#dbb8cc" stroke-width="2.5"/>` +
+    `<g><circle cx="34" cy="14" r="3" fill="#ff9dbb"/><circle cx="28" cy="19" r="3" fill="#ff9dbb"/><circle cx="31" cy="26" r="3" fill="#ff9dbb"/><circle cx="38" cy="26" r="3" fill="#ff9dbb"/><circle cx="40" cy="19" r="3" fill="#ff9dbb"/><circle cx="34" cy="20" r="2.8" fill="#ffd23e"/></g>` +
+    `<path d="M20 56 h9 M20 63 h9 M91 56 h9 M91 63 h9" ${line(2, '#dbb8cc')}/>` +
+    blush(36, 84, 62),
+  // 鼠鼠（可憐）：小圓耳 + 淺色口鼻 + 小手手
+  hamster:
+    `<circle cx="40" cy="28" r="8" fill="#f0e4d6" stroke="#c9b49c" stroke-width="2.5"/><circle cx="40" cy="28" r="3.5" fill="#e0c9b0"/>` +
+    `<circle cx="80" cy="28" r="8" fill="#f0e4d6" stroke="#c9b49c" stroke-width="2.5"/><circle cx="80" cy="28" r="3.5" fill="#e0c9b0"/>` +
+    `<ellipse cx="60" cy="56" rx="35" ry="31" fill="#f0e4d6" stroke="#c9b49c" stroke-width="2.5"/>` +
+    `<ellipse cx="60" cy="64" rx="13" ry="10" fill="#faf3ea"/>` +
+    `<ellipse cx="60" cy="57" rx="3.5" ry="2.8" fill="#c98a8a"/>` +
+    `<ellipse cx="47" cy="79" rx="5.5" ry="4" fill="#f0e4d6" stroke="#c9b49c" stroke-width="2"/>` +
+    `<ellipse cx="73" cy="79" rx="5.5" ry="4" fill="#f0e4d6" stroke="#c9b49c" stroke-width="2"/>` +
+    blush(33, 87, 60),
+  // 虎虎（威武）：圓耳 + 額頭「王」+ 側邊虎紋 + 口鼻
+  tiger:
+    `<circle cx="36" cy="26" r="10" fill="#ffa245" stroke="#d97b1a" stroke-width="2.5"/><circle cx="36" cy="26" r="4.5" fill="#ffd9ae"/>` +
+    `<circle cx="84" cy="26" r="10" fill="#ffa245" stroke="#d97b1a" stroke-width="2.5"/><circle cx="84" cy="26" r="4.5" fill="#ffd9ae"/>` +
+    `<ellipse cx="60" cy="56" rx="36" ry="31" fill="#ffa245" stroke="#d97b1a" stroke-width="2.5"/>` +
+    `<path d="M53 28 h14 M53 33 h14 M53 38 h14 M60 28 v10" ${line(3)}/>` +
+    `<path d="M27 48 q7 2 6 8 M93 48 q-7 2 -6 8" ${line(3.5)}/>` +
+    `<ellipse cx="60" cy="64" rx="13" ry="9" fill="#ffe9d1"/>` +
+    `<ellipse cx="60" cy="58" rx="4.5" ry="3.5" fill="#5c3a22"/>`,
+  // 章魚（上班）：圓頭 + 波浪裙擺觸手
   octopus:
-    `<ellipse cx="60" cy="44" rx="34" ry="27" fill="#ff8e7d"/>` +
-    `<path d="M28 58 h64 v8 q0 10 -8 10 q-8 0 -8 -8 q0 8 -8 8 q-8 0 -8 -8 q0 8 -8 8 q-8 0 -8 -8 q0 8 -8 8 q-8 0 -8 -10 Z" fill="#ff8e7d"/>` +
+    `<ellipse cx="60" cy="44" rx="34" ry="27" fill="#ff8e7d" stroke="#e06a58" stroke-width="2.5"/>` +
+    `<path d="M28 58 h64 v8 q0 10 -8 10 q-8 0 -8 -8 q0 8 -8 8 q-8 0 -8 -8 q0 8 -8 8 q-8 0 -8 -8 q0 8 -8 8 q-8 0 -8 -10 Z" fill="#ff8e7d" stroke="#e06a58" stroke-width="2.5"/>` +
     `<circle cx="44" cy="72" r="2" fill="#e06a58"/><circle cx="60" cy="74" r="2" fill="#e06a58"/><circle cx="76" cy="72" r="2" fill="#e06a58"/>` +
     blush(37, 83, 54),
-  // 藍色小貓：圓耳朵 + 額頭條紋
-  cat:
-    `<circle cx="40" cy="26" r="9" fill="#8fd0f2"/><circle cx="80" cy="26" r="9" fill="#8fd0f2"/>` +
-    `<ellipse cx="60" cy="54" rx="36" ry="32" fill="#8fd0f2"/>` +
+  // 藍色小貓（休息）：圓耳朵 + 額頭條紋
+  bluecat:
+    `<circle cx="40" cy="26" r="9" fill="#8fd0f2" stroke="#5fa8cc" stroke-width="2.5"/><circle cx="80" cy="26" r="9" fill="#8fd0f2" stroke="#5fa8cc" stroke-width="2.5"/>` +
+    `<ellipse cx="60" cy="54" rx="36" ry="32" fill="#8fd0f2" stroke="#5fa8cc" stroke-width="2.5"/>` +
     `<path d="M52 26 v7 M60 24 v8 M68 26 v7" ${line(3, '#5fb0dd')}/>` +
     blush(34, 86, 60),
-  // 小熊：圓耳朵 + 淺色口鼻
+  // 小熊（喝酒）：圓耳朵 + 淺色口鼻
   bear:
-    `<circle cx="35" cy="25" r="10" fill="#c68d5c"/><circle cx="85" cy="25" r="10" fill="#c68d5c"/>` +
-    `<circle cx="35" cy="25" r="5" fill="#e8c49a"/><circle cx="85" cy="25" r="5" fill="#e8c49a"/>` +
-    `<ellipse cx="60" cy="54" rx="36" ry="32" fill="#c68d5c"/>` +
+    `<circle cx="35" cy="25" r="10" fill="#c68d5c" stroke="#9a6a3e" stroke-width="2.5"/><circle cx="35" cy="25" r="5" fill="#e8c49a"/>` +
+    `<circle cx="85" cy="25" r="10" fill="#c68d5c" stroke="#9a6a3e" stroke-width="2.5"/><circle cx="85" cy="25" r="5" fill="#e8c49a"/>` +
+    `<ellipse cx="60" cy="54" rx="36" ry="32" fill="#c68d5c" stroke="#9a6a3e" stroke-width="2.5"/>` +
     `<ellipse cx="60" cy="63" rx="13" ry="9.5" fill="#e8c49a"/>` +
     `<ellipse cx="60" cy="56" rx="4.5" ry="3.5" fill="#5c3a22"/>` +
     blush(33, 87, 60),
-  // 調皮小子：粗眉 + 短瀏海
+  // 調皮小子（男生）：粗眉 + 短瀏海
   kid:
-    `<ellipse cx="60" cy="54" rx="33" ry="31" fill="#ffd9b3"/>` +
+    `<ellipse cx="60" cy="54" rx="33" ry="31" fill="#ffd9b3" stroke="#e0b088" stroke-width="2.5"/>` +
     `<path d="M27 48 a33 28 0 0 1 66 0" fill="none" stroke="#4a332a" stroke-width="11" stroke-linecap="round"/>` +
     `<path d="M38 37 q9 -4 18 1 M82 37 q-9 -4 -18 1" ${line(4.5, '#4a332a')}/>` +
     blush(36, 84, 60),
@@ -54,6 +94,17 @@ const EYES = {
   dizzy: `<g class="st-spin"><path d="M51 47 a4.5 4.5 0 1 1 -4.5 -4.5 a3 3 0 1 0 3 3" ${line(3)}/></g><g class="st-spin"><path d="M77 47 a4.5 4.5 0 1 1 -4.5 -4.5 a3 3 0 1 0 3 3" ${line(3)}/></g>`,
   angry: `<path d="M39 40 l14 4 M81 40 l-14 4" ${line(3.5)}/><circle cx="47" cy="50" r="4" fill="${INK}"/><circle cx="73" cy="50" r="4" fill="${INK}"/>`,
   shades: `<path d="M28 41 h64" ${line(3.5, '#20242c')}/><rect x="36" y="40" width="20" height="13" rx="5" fill="#20242c"/><rect x="64" y="40" width="20" height="13" rx="5" fill="#20242c"/>`,
+  // 亮晶晶大眼（可愛）
+  shiny: `<circle cx="47" cy="47" r="6" fill="${INK}"/><circle cx="45" cy="45" r="2.2" fill="#fff"/><circle cx="49.5" cy="49.5" r="1.2" fill="#fff"/>` +
+    `<circle cx="73" cy="47" r="6" fill="${INK}"/><circle cx="71" cy="45" r="2.2" fill="#fff"/><circle cx="75.5" cy="49.5" r="1.2" fill="#fff"/>`,
+  // 汪汪淚眼（可憐 🥺）
+  plead: `<circle cx="47" cy="47" r="7" fill="${INK}"/><circle cx="44.5" cy="44.5" r="2.6" fill="#fff"/><circle cx="49.5" cy="50" r="1.4" fill="#fff"/><ellipse cx="47" cy="53.5" rx="5" ry="1.8" fill="#bfe4ff"/>` +
+    `<circle cx="73" cy="47" r="7" fill="${INK}"/><circle cx="70.5" cy="44.5" r="2.6" fill="#fff"/><circle cx="75.5" cy="50" r="1.4" fill="#fff"/><ellipse cx="73" cy="53.5" rx="5" ry="1.8" fill="#bfe4ff"/>`,
+  wink: `<path d="M41 49 Q47 41 53 49" ${line(4)}/><circle cx="73" cy="47" r="4.5" fill="${INK}"/>`,
+  // 優雅睫毛（美麗）
+  lash: `<path d="M41 46 q6 6 12 0" ${line(3.5)}/><path d="M40 48 l-3 3 M45 50.5 l-2 3.5 M51 50.5 l1 3.5" ${line(2.5)}/>` +
+    `<path d="M67 46 q6 6 12 0" ${line(3.5)}/><path d="M69 50.5 l-1 3.5 M75 50.5 l2 3.5 M80 48 l3 3" ${line(2.5)}/>`,
+  heart: `<g class="st-beat">${heart(47, 47, 6.5, '#e0554e')}${heart(73, 47, 6.5, '#e0554e')}</g>`,
 };
 
 const MOUTH = {
@@ -63,6 +114,10 @@ const MOUTH = {
   wavy: `<path d="M50 64 Q55 60 60 64 Q65 68 70 64" ${line(4)}/>`,
   frown: `<path d="M50 68 Q60 59 70 68" ${line(4)}/>`,
   flat: `<path d="M52 64 h16" ${line(4)}/>`,
+  uwu: `<path d="M50 61 q5 6 10 0 q5 6 10 0" ${line(4)}/>`,
+  smirk: `<path d="M51 64 q9 6 18 -3" ${line(4)}/>`,
+  shout: `<ellipse cx="60" cy="65" rx="9" ry="8" fill="#8c4a3c"/><path d="M54 69 q6 5 12 0 Z" fill="#ff8a8a"/>`,
+  kiss: heart(60, 64, 5, '#e0554e'),
 };
 
 // Face-attached extras: concatenated into the eyes/mouth slot so they ride
@@ -70,6 +125,7 @@ const MOUTH = {
 const FACEX = {
   blushMore: `<circle cx="36" cy="59" r="8" fill="#ff8a8a" opacity=".6"/><circle cx="84" cy="59" r="8" fill="#ff8a8a" opacity=".6"/>`,
   tear: `<g class="st-drip"><path d="M45 55 q6 9 0 14 q-6 -5 0 -14" fill="#6fb9ff"/></g>`,
+  streams: `<g class="st-drip"><path d="M43 54 q-1 12 1 22" ${line(5, '#6fb9ff')}/><path d="M77 54 q1 12 -1 22" ${line(5, '#6fb9ff')}/></g>`,
 };
 
 // ---- ambient props / effects (rendered outside the body, own animations) ----
@@ -83,8 +139,14 @@ const PROP = {
   confetti: `<g class="st-twinkle"><circle cx="22" cy="34" r="3" fill="#e0554e"/><circle cx="106" cy="36" r="2.5" fill="#4f8cff"/></g><g class="st-twinkle" style="animation-delay:.4s"><circle cx="97" cy="14" r="3" fill="#33c481"/><circle cx="14" cy="18" r="2.5" fill="#e0891e"/></g>`,
   dots: `<g class="st-floaty"><circle cx="88" cy="24" r="2.6" fill="#9fb0cd"/><circle cx="97" cy="19" r="3.2" fill="#9fb0cd"/><circle cx="107" cy="13" r="3.8" fill="#9fb0cd"/></g>`,
   moon: `<path d="M104 12 a10 10 0 1 0 7 17 a8 8 0 1 1 -7 -17" fill="#ffd23e"/>`,
+  sun: `<g class="st-twinkle"><circle cx="24" cy="24" r="7" fill="#ffd23e"/><path d="M24 13 v-5 M24 35 v5 M13 24 h-5 M35 24 h5 M16 16 l-3.5 -3.5 M32 32 l3.5 3.5 M32 16 l3.5 -3.5 M16 32 l-3.5 3.5" ${line(2.5, '#ffd23e')}/></g>`,
   speedLines: `<g class="st-dash"><path d="M16 34 h11 M12 44 h13 M16 54 h11" ${line(3, '#9fb0cd')}/></g>`,
   bubbles: `<g class="st-floaty"><circle cx="22" cy="28" r="4.5" fill="#ffd8e2"/><circle cx="15" cy="40" r="3" fill="#ffd8e2"/></g><g class="st-floaty" style="animation-delay:.7s"><circle cx="103" cy="30" r="3.5" fill="#ffd8e2"/></g>`,
+  hearts: `<g class="st-floaty">${heart(24, 28, 6)}</g><g class="st-floaty" style="animation-delay:.6s">${heart(101, 22, 4.5)}</g>`,
+  flower: `<g class="st-twinkle" style="animation-delay:.3s"><circle cx="100" cy="20" r="3" fill="#ff9dbb"/><circle cx="94" cy="25" r="3" fill="#ff9dbb"/><circle cx="97" cy="32" r="3" fill="#ff9dbb"/><circle cx="103" cy="32" r="3" fill="#ff9dbb"/><circle cx="106" cy="25" r="3" fill="#ff9dbb"/><circle cx="100" cy="26" r="2.8" fill="#ffd23e"/></g>`,
+  fire: `<g class="st-twinkle"><path d="M99 34 q-9 -4 -6 -13 q2 4 5 5 q-2 -8 6 -12 q-1 6 3 9 q5 5 0 10 q-4 4 -8 1 Z" fill="#ff7a30"/><path d="M97 32 q-4 -3 -2 -8 q3 3 4 -2 q3 4 1 8 q-1 3 -3 2 Z" fill="#ffd23e"/></g>`,
+  exclam: `<g class="st-pop"><text x="93" y="36" font-size="28" font-weight="900" fill="#e0554e">！</text></g>`,
+  bowl: `<g transform="translate(90 60)"><circle cx="-6" cy="-6" r="4" fill="#fff" stroke="#c9b49c" stroke-width="2"/><circle cx="2" cy="-8" r="4.5" fill="#fff" stroke="#c9b49c" stroke-width="2"/><circle cx="8" cy="-5" r="3.5" fill="#fff" stroke="#c9b49c" stroke-width="2"/><path d="M-13 -3 a13 13 0 0 0 26 0 Z" fill="#e07a5f" stroke="#b85a42" stroke-width="2.5"/></g>`,
   beer:
     `<g class="st-cheers"><g transform="rotate(14 88 56)">` +
     `<rect x="78" y="46" width="20" height="24" rx="3" fill="#ffb636" stroke="#a86f10" stroke-width="3"/>` +
@@ -138,11 +200,14 @@ const PROP = {
 
 // ---- sticker builder --------------------------------------------------------
 
+const SHADOW = `<ellipse cx="60" cy="90" rx="25" ry="4.5" fill="#7a8aa0" opacity=".22"/>`;
+
 function art(label, color, body, bodyAnim, parts) {
   const fs = label.length >= 4 ? 19 : 22;
   const [face, ...ambient] = parts;
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-hidden="true">` +
+    SHADOW +
     `<g class="${bodyAnim}">` + body + face + `</g>` +
     ambient.join('') +
     `<text x="60" y="112" text-anchor="middle" font-size="${fs}" font-weight="900"` +
@@ -165,7 +230,55 @@ function pack(id, name, icon, color, body, defs) {
 // def: [key, label, bodyAnim, face(eyes+mouth+face-extras), ...ambient props]
 
 export const STICKER_PACKS = [
-  pack('work', '上班用', '🐙', '#2f6fe0', BODIES.octopus, [
+  pack('cute', '可愛', '🐰', '#e0679a', BODIES.bunny, [
+    ['morning', '早安', 'st-bob', EYES.happy + MOUTH.smile, PROP.sun],
+    ['night', '晚安', 'st-breathe', EYES.closed + MOUTH.smile, PROP.zzz, PROP.moon],
+    ['thanks', '謝謝你', 'st-bob', EYES.shiny + MOUTH.smile, PROP.hearts],
+    ['okok', '好喔好喔', 'st-bob', EYES.dot + MOUTH.smile, PROP.sparkR],
+    ['noprob', '沒問題！', 'st-jump', EYES.wink + MOUTH.grin, PROP.thumb],
+    ['missyou', '想你了', 'st-bob-slow', EYES.shiny + MOUTH.uwu, PROP.hearts],
+    ['please', '拜託嘛', 'st-bob', EYES.plead + MOUTH.uwu, PROP.spark],
+    ['loveyou', '愛你唷', 'st-bob', EYES.heart + MOUTH.smile, PROP.hearts],
+    ['haha', '哈哈哈', 'st-jump', EYES.happy + MOUTH.grin, PROP.spark, PROP.sparkR],
+    ['okla', 'OK啦', 'st-wiggle', EYES.wink + MOUTH.smile, PROP.sparkR],
+  ]),
+  pack('pretty', '美麗', '🌸', '#b05cc4', BODIES.prettycat, [
+    ['tired2', '辛苦了', 'st-bob-slow', EYES.lash + MOUTH.smile, PROP.spark],
+    ['best', '你最棒', 'st-bob', EYES.wink + MOUTH.smile, PROP.thumb],
+    ['itsok', '沒關係', 'st-bob-slow', EYES.lash + MOUTH.smile, PROP.flower],
+    ['slowly', '慢慢來', 'st-breathe', EYES.closed + MOUTH.smile, PROP.bubbles],
+    ['yourturn', '交給你囉', 'st-wiggle', EYES.wink + MOUTH.smirk, PROP.sparkR],
+    ['busygo', '先去忙囉', 'st-bob', EYES.dot + MOUTH.smile, PROP.phone],
+    ['beauty', '美美的', 'st-sway', EYES.lash + MOUTH.uwu, PROP.flower, PROP.spark],
+    ['later', '晚點聊', 'st-bob-slow', EYES.dot + MOUTH.smile, PROP.phone],
+    ['mmgood', '嗯嗯好', 'st-bob', EYES.closed + MOUTH.smile, PROP.sparkR],
+    ['kiss', '親一個', 'st-bob', EYES.wink + MOUTH.kiss, PROP.hearts],
+  ]),
+  pack('poor', '可憐', '🥺', '#5c85d6', BODIES.hamster, [
+    ['qq', 'QQ', 'st-bob-slow', EYES.plead + MOUTH.wavy + FACEX.tear],
+    ['sorry', '我錯了', 'st-bow', EYES.tired + MOUTH.frown, PROP.sweat],
+    ['hugme', '抱抱我', 'st-bob-slow', EYES.plead + MOUTH.o, PROP.hearts],
+    ['unfair', '好委屈', 'st-bob-slow', EYES.plead + MOUTH.wavy + FACEX.tear, PROP.dots],
+    ['hungry', '餓死了', 'st-shake', EYES.dizzy + MOUTH.wavy, PROP.bowl],
+    ['comfort', '求安慰', 'st-bob-slow', EYES.plead + MOUTH.frown, PROP.hearts],
+    ['dontscold', '別罵我', 'st-shake', EYES.plead + MOUTH.wavy, PROP.sweat, PROP.exclam],
+    ['crycry', '哭哭', 'st-bob-slow', EYES.closed + MOUTH.wavy + FACEX.streams],
+    ['sotired', '好累喔', 'st-breathe', EYES.tired + MOUTH.flat, PROP.zzz],
+    ['nomoney', '沒錢錢', 'st-bob-slow', EYES.plead + MOUTH.frown + FACEX.tear, PROP.coin],
+  ]),
+  pack('mighty', '威武', '🐯', '#d64545', BODIES.tiger, [
+    ['onme', '交給我', 'st-bob', EYES.angry + MOUTH.grin, PROP.fire],
+    ['solid', '穩了！', 'st-bob', EYES.shades + MOUTH.smirk, PROP.thumb],
+    ['charge', '衝啊！', 'st-jump', EYES.angry + MOUTH.shout, PROP.speedLines, PROP.fire],
+    ['fearless', '沒在怕', 'st-wiggle', EYES.shades + MOUTH.smirk, PROP.sparkR],
+    ['gotyou', '罩你', 'st-bob', EYES.dot + MOUTH.grin, PROP.fists],
+    ['shutup', '閉嘴啦', 'st-shake', EYES.angry + MOUTH.flat, PROP.boltRed],
+    ['sostrong', '太猛了', 'st-jump', EYES.shiny + MOUTH.shout, PROP.fire],
+    ['boss2', '霸氣', 'st-sway', EYES.shades + MOUTH.grin, PROP.fire, PROP.spark],
+    ['fighting', '加油！', 'st-jump', EYES.happy + MOUTH.shout, PROP.fists],
+    ['go', '上！', 'st-shake', EYES.angry + MOUTH.shout, PROP.speedLines, PROP.exclam],
+  ]),
+  pack('work', '上班', '🐙', '#2f6fe0', BODIES.octopus, [
     ['ok', '收到！', 'st-bob', EYES.happy + MOUTH.smile, PROP.sparkR],
     ['meeting', '開會中', 'st-bob-slow', EYES.tired + MOUTH.flat, PROP.laptop],
     ['overtime', '加班中', 'st-sway', EYES.dead + MOUTH.wavy, PROP.moon, PROP.sweat],
@@ -175,9 +288,9 @@ export const STICKER_PACKS = [
     ['offwork', '下班啦！', 'st-jump', EYES.happy + MOUTH.grin, PROP.spark, PROP.sparkR],
     ['boss', '好的老闆', 'st-bow', EYES.closed + MOUTH.smile, PROP.sweat],
   ]),
-  pack('rest', '休息用', '🐱', '#8a5cd8', BODIES.cat, [
+  pack('rest', '休息', '🐱', '#8a5cd8', BODIES.bluecat, [
     ['lazy', '耍廢中', 'st-bob-slow', EYES.tired + MOUTH.flat, PROP.phone],
-    ['sleep', '晚安', 'st-breathe', EYES.closed + MOUTH.o, PROP.zzz, PROP.moon],
+    ['sleep', '睡了喔', 'st-breathe', EYES.closed + MOUTH.o, PROP.zzz, PROP.moon],
     ['coffee', '咖啡時間', 'st-bob', EYES.dot + MOUTH.smile, PROP.coffee],
     ['drama', '追劇中', 'st-bob-slow', EYES.dot + MOUTH.o, PROP.tv],
     ['blank', '放空', 'st-bob-slow', EYES.dot + MOUTH.flat, PROP.dots],
@@ -185,7 +298,7 @@ export const STICKER_PACKS = [
     ['recharge', '充電中', 'st-breathe', EYES.closed + MOUTH.flat, PROP.battery],
     ['dnd', '別吵我', 'st-shake', EYES.angry + MOUTH.frown, PROP.boltRed],
   ]),
-  pack('drink', '喝酒用', '🐻', '#e0891e', BODIES.bear, [
+  pack('drink', '喝酒', '🐻', '#e0891e', BODIES.bear, [
     ['cheers', '乾杯！', 'st-wiggle', EYES.happy + MOUTH.grin, PROP.beer, PROP.spark],
     ['onemore', '再一杯', 'st-bob', EYES.dot + MOUTH.o + FACEX.blushMore, PROP.beer],
     ['tipsy', '微醺中', 'st-sway', EYES.dizzy + MOUTH.smile + FACEX.blushMore, PROP.bubbles],
@@ -195,7 +308,7 @@ export const STICKER_PACKS = [
     ['strong', '千杯不醉', 'st-wiggle', EYES.shades + MOUTH.grin, PROP.beer],
     ['tomorrow', '明天再說', 'st-breathe', EYES.tired + MOUTH.flat, PROP.zzz],
   ]),
-  pack('guys', '男生用', '👦', '#16a06a', BODIES.kid, [
+  pack('guys', '男生', '👦', '#16a06a', BODIES.kid, [
     ['bro', '兄弟！', 'st-jump', EYES.happy + MOUTH.grin, PROP.fists],
     ['buff', '猛！', 'st-bob', EYES.dot + MOUTH.grin, PROP.dumbbell],
     ['cool', '帥！', 'st-wiggle', EYES.shades + MOUTH.smile, PROP.sparkR],
