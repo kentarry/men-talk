@@ -1,6 +1,6 @@
 'use strict';
 // gen-icons.js — generate PWA PNG icons with zero dependencies (Node zlib).
-// Draws a simple padlock glyph. Run: node tools/gen-icons.js
+// Draws the "Ex" mark: navy E + red x on white. Run: node tools/gen-icons.js
 const fs = require('fs');
 const path = require('path');
 const zlib = require('zlib');
@@ -8,7 +8,7 @@ const zlib = require('zlib');
 const OUT = path.join(__dirname, '..', 'public', 'icons');
 fs.mkdirSync(OUT, { recursive: true });
 
-const BG = [18, 30, 55], ACC = [79, 140, 255], LT = [233, 239, 253], DK = [13, 20, 36];
+const BG = [255, 255, 255], NAVY = [27, 33, 102], RED = [225, 17, 28];
 
 function inRoundRect(px, py, x0, y0, x1, y1, r) {
   if (px < x0 || px > x1 || py < y0 || py > y1) return false;
@@ -18,27 +18,42 @@ function inRoundRect(px, py, x0, y0, x1, y1, r) {
   return Math.hypot(px - cx, py - cy) <= r;
 }
 
+function inCapsule(px, py, ax, ay, bx, by, r) {
+  const dx = bx - ax, dy = by - ay;
+  const t = Math.max(0, Math.min(1, ((px - ax) * dx + (py - ay) * dy) / (dx * dx + dy * dy)));
+  return Math.hypot(px - (ax + t * dx), py - (ay + t * dy)) <= r;
+}
+
 function drawIcon(S, maskable) {
   const k = maskable ? 0.78 : 1;
   const sc = (v) => 50 + (v - 50) * k;
   const scr = (r) => r * k;
-  const bodyX0 = sc(30), bodyX1 = sc(70), bodyY0 = sc(47), bodyY1 = sc(80), bodyR = scr(7);
-  const ringCx = sc(50), ringCy = sc(43), ringRo = scr(17), ringRi = scr(10.5);
-  const khCx = sc(50), khCy = sc(59), khR = scr(4.6);
-  const slotX0 = sc(48.7), slotX1 = sc(51.3), slotY0 = sc(59), slotY1 = sc(70);
+  // "E" glyph: a vertical stem + three horizontal bars, navy.
+  // Coordinates on a 0..100 canvas; [x0, y0, x1, y1, radius].
+  const bars = [
+    [14, 22, 27, 78, 3], // stem
+    [14, 22, 48, 34, 3], // top bar
+    [14, 44, 43, 56, 3], // middle bar
+    [14, 66, 48, 78, 3], // bottom bar
+  ];
+  // "x" glyph: two diagonal strokes, red; [ax, ay, bx, by, radius].
+  const strokes = [
+    [57, 34, 87, 72, 6.5],
+    [87, 34, 57, 72, 6.5],
+  ];
 
   const data = new Uint8Array(S * S * 4);
   for (let y = 0; y < S; y++) {
     for (let x = 0; x < S; x++) {
       const px = 100 * (x + 0.5) / S, py = 100 * (y + 0.5) / S;
       let c = BG;
-      const dr = Math.hypot(px - ringCx, py - ringCy);
-      if (dr <= ringRo && dr >= ringRi) c = LT;                       // shackle
-      if (inRoundRect(px, py, bodyX0, bodyY0, bodyX1, bodyY1, bodyR)) c = ACC; // body
-      if (c === ACC) {
-        const dk = Math.hypot(px - khCx, py - khCy);
-        if (dk <= khR) c = DK;                                        // keyhole hole
-        if (px >= slotX0 && px <= slotX1 && py >= slotY0 && py <= slotY1) c = DK; // slot
+      for (const [x0, y0, x1, y1, r] of bars) {
+        if (inRoundRect(px, py, sc(x0), sc(y0), sc(x1), sc(y1), scr(r))) { c = NAVY; break; }
+      }
+      if (c === BG) {
+        for (const [ax, ay, bx, by, r] of strokes) {
+          if (inCapsule(px, py, sc(ax), sc(ay), sc(bx), sc(by), scr(r))) { c = RED; break; }
+        }
       }
       const i = (y * S + x) * 4;
       data[i] = c[0]; data[i + 1] = c[1]; data[i + 2] = c[2]; data[i + 3] = 255;
