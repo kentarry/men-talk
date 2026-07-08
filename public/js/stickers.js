@@ -2,8 +2,9 @@
 // so a sticker message only carries its id (tiny, E2EE-friendly); received ids
 // are used purely as lookup keys and never interpreted as markup.
 //
-// 8 packs, each with its own original character (LINE-store style: outlined
-// animal characters, ground shadow, big handwritten-style text, animated).
+// 8 packs organised by everyday CHAT SCENE + 2025-26 台灣流行語 (based on LINE
+// store trend research): 日常回覆 / 已讀敷衍 / 嗆人白爛 / 厭世上班 / 撒嬌愛心 /
+// 應援吹捧 / 祝福問候 / 疑惑吐槽. Each pack keeps its own original character.
 // Animation: parts carry st-* classes; the keyframes live in styles.css and
 // only apply where the SVG is inline in the DOM (chat bubbles + picker).
 // prefers-reduced-motion users get static stickers via the global CSS rule.
@@ -18,6 +19,16 @@ const blush = (x1, x2, y) =>
 const heart = (x, y, s, c = '#ff6f9c') =>
   `<path d="M${x} ${y + s * 0.9} C ${x - s * 1.4} ${y - s * 0.3} ${x - s * 0.6} ${y - s * 1.4} ${x} ${y - s * 0.35} ` +
   `C ${x + s * 0.6} ${y - s * 1.4} ${x + s * 1.4} ${y - s * 0.3} ${x} ${y + s * 0.9} Z" fill="${c}"/>`;
+
+// 4-point sparkle star, used for excited "starry" eyes and shiny props.
+const star4 = (cx, cy, r, c = '#ffd23e') => {
+  const b = r * 0.4;
+  return (
+    `<path d="M${cx} ${cy - r} L${cx + b} ${cy - b} L${cx + r} ${cy} L${cx + b} ${cy + b} ` +
+    `L${cx} ${cy + r} L${cx - b} ${cy + b} L${cx - r} ${cy} L${cx - b} ${cy - b} Z" ` +
+    `fill="${c}" stroke="#d99a12" stroke-width="1"/>`
+  );
+};
 
 // ---- pack characters (faces plug in around eyes y≈47 / mouth y≈60-68) -------
 
@@ -105,6 +116,14 @@ const EYES = {
   lash: `<path d="M41 46 q6 6 12 0" ${line(3.5)}/><path d="M40 48 l-3 3 M45 50.5 l-2 3.5 M51 50.5 l1 3.5" ${line(2.5)}/>` +
     `<path d="M67 46 q6 6 12 0" ${line(3.5)}/><path d="M69 50.5 l-1 3.5 M75 50.5 l2 3.5 M80 48 l3 3" ${line(2.5)}/>`,
   heart: `<g class="st-beat">${heart(47, 47, 6.5, '#e0554e')}${heart(73, 47, 6.5, '#e0554e')}</g>`,
+  // 翻白眼（嗆人/敷衍）：眼白 + 瞳孔往上
+  roll: `<circle cx="47" cy="48" r="5.5" fill="#fff" stroke="${INK}" stroke-width="2"/><circle cx="47" cy="44.5" r="2.6" fill="${INK}"/>` +
+    `<circle cx="73" cy="48" r="5.5" fill="#fff" stroke="${INK}" stroke-width="2"/><circle cx="73" cy="44.5" r="2.6" fill="${INK}"/>`,
+  // 瞪大眼（傻眼/震驚）
+  wide: `<circle cx="47" cy="47" r="8.5" fill="#fff" stroke="${INK}" stroke-width="2.5"/><circle cx="47" cy="48" r="3.2" fill="${INK}"/>` +
+    `<circle cx="73" cy="47" r="8.5" fill="#fff" stroke="${INK}" stroke-width="2.5"/><circle cx="73" cy="48" r="3.2" fill="${INK}"/>`,
+  // 星星眼（崇拜/吹捧）
+  starry: `<g class="st-twinkle">${star4(47, 47, 7)}</g><g class="st-twinkle" style="animation-delay:.3s">${star4(73, 47, 7)}</g>`,
 };
 
 const MOUTH = {
@@ -118,6 +137,13 @@ const MOUTH = {
   smirk: `<path d="M51 64 q9 6 18 -3" ${line(4)}/>`,
   shout: `<ellipse cx="60" cy="65" rx="9" ry="8" fill="#8c4a3c"/><path d="M54 69 q6 5 12 0 Z" fill="#ff8a8a"/>`,
   kiss: heart(60, 64, 5, '#e0554e'),
+  // 咬牙開口（嗆人）
+  gah: `<path d="M49 60 h22 v5 q-11 5 -22 0 Z" fill="#8c4a3c"/><path d="M49 62.5 h22" stroke="#fff" stroke-width="2"/>` +
+    `<path d="M55 60 v6.5 M61 60 v6.5 M67 60 v6.5" stroke="#fff" stroke-width="1.6"/>`,
+  // 吐舌（賤賤的/白爛）
+  tongue: `<path d="M50 60 Q60 67 70 60" ${line(4)}/><path d="M57 62 q3 8 7 1 Z" fill="#ff7a7a" stroke="#e0554e" stroke-width="1.5"/>`,
+  // 大笑 D 嘴（笑死）
+  d: `<path d="M47 59 Q60 82 73 59 Z" fill="#8c4a3c"/><path d="M53 71 q7 6 14 0 Z" fill="#ff8a8a"/>`,
 };
 
 // Face-attached extras: concatenated into the eyes/mouth slot so they ride
@@ -126,6 +152,8 @@ const FACEX = {
   blushMore: `<circle cx="36" cy="59" r="8" fill="#ff8a8a" opacity=".6"/><circle cx="84" cy="59" r="8" fill="#ff8a8a" opacity=".6"/>`,
   tear: `<g class="st-drip"><path d="M45 55 q6 9 0 14 q-6 -5 0 -14" fill="#6fb9ff"/></g>`,
   streams: `<g class="st-drip"><path d="M43 54 q-1 12 1 22" ${line(5, '#6fb9ff')}/><path d="M77 54 q1 12 -1 22" ${line(5, '#6fb9ff')}/></g>`,
+  // 臉上裂痕（我裂開）
+  crack: `<g class="st-blink"><path d="M60 27 l-5 8 l6 5 l-6 8 l6 6 l-4 7" fill="none" stroke="${INK}" stroke-width="2.5" stroke-linejoin="round"/></g>`,
 };
 
 // ---- ambient props / effects (rendered outside the body, own animations) ----
@@ -196,6 +224,20 @@ const PROP = {
     `<rect x="12" y="-6" width="19" height="15" rx="6.5" fill="#ffc84d" stroke="#c9962e" stroke-width="2.5"/>` +
     `<path d="M-5 -8 l3 4 M0 -10 v5 M5 -8 l-3 4" ${line(2.5, '#ffd23e')}/></g></g>`,
   question: `<g class="st-pop"><text x="94" y="34" font-size="30" font-weight="900" fill="#e0554e">?</text></g>`,
+  // 多個問號（是在哈囉/傻眼）
+  qmarks: `<g class="st-floaty"><text x="86" y="30" font-size="21" font-weight="900" fill="#e0554e">?</text></g>` +
+    `<g class="st-floaty" style="animation-delay:.5s"><text x="100" y="18" font-size="15" font-weight="900" fill="#e0891e">?</text></g>`,
+  // 怒氣青筋 💢（嗆人/崩潰）
+  vein: `<g class="st-pop"><path d="M89 15 q8 0 8 8 M97 15 q0 8 -8 8" fill="none" stroke="#e0554e" stroke-width="3" stroke-linecap="round"/>` +
+    `<path d="M98 23 q7 0 7 7 M105 23 q0 7 -7 7" fill="none" stroke="#e0554e" stroke-width="2.5" stroke-linecap="round"/></g>`,
+  // 往上箭頭（上車囉/超頂）
+  arrowUp: `<g class="st-floaty"><path d="M100 26 l-9 13 h5 v11 h8 v-11 h5 Z" fill="#33c481" stroke="#1f9e5e" stroke-width="1.5" stroke-linejoin="round"/></g>`,
+  // 皇冠 👑（尊爆/太神）
+  crown: `<g class="st-twinkle"><path d="M43 16 L52 25 L60 10 L68 25 L77 16 L73 33 L47 33 Z" fill="#ffd23e" stroke="#c99a12" stroke-width="2" stroke-linejoin="round"/><circle cx="60" cy="17" r="2.6" fill="#ff6f9c"/></g>`,
+  // 生日蛋糕 🎂
+  cake: `<g transform="translate(89 61)"><rect x="-15" y="-3" width="30" height="13" rx="2" fill="#ffe0ea" stroke="#d98aa5" stroke-width="2"/>` +
+    `<path d="M-15 2 h30" stroke="#ff9dbb" stroke-width="3"/><rect x="-1.5" y="-13" width="3" height="10" fill="#7ec8ff"/>` +
+    `<g class="st-twinkle"><path d="M0 -18 q-3 3 0 5 q3 -2 0 -5" fill="#ff7a30"/></g></g>`,
 };
 
 // ---- sticker builder --------------------------------------------------------
@@ -203,7 +245,8 @@ const PROP = {
 const SHADOW = `<ellipse cx="60" cy="90" rx="25" ry="4.5" fill="#7a8aa0" opacity=".22"/>`;
 
 function art(label, color, body, bodyAnim, parts) {
-  const fs = label.length >= 4 ? 19 : 22;
+  const n = String(label).length;
+  const fs = n <= 2 ? 23 : n === 3 ? 21 : n === 4 ? 19 : n === 5 ? 16 : 14;
   const [face, ...ambient] = parts;
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-hidden="true">` +
@@ -230,93 +273,109 @@ function pack(id, name, icon, color, body, defs) {
 // def: [key, label, bodyAnim, face(eyes+mouth+face-extras), ...ambient props]
 
 export const STICKER_PACKS = [
-  pack('cute', '可愛', '🐰', '#e0679a', BODIES.bunny, [
+  // 1) 日常回覆 — 使用率最高的萬用回覆（好喔/收到/確實…）
+  pack('daily', '日常回覆', '👌', '#27a06a', BODIES.bunny, [
+    ['hao', '好喔', 'st-bob', EYES.happy + MOUTH.smile, PROP.sparkR],
+    ['got', '收到', 'st-bob', EYES.dot + MOUTH.smile, PROP.thumb],
+    ['okla', 'OK啦', 'st-jump', EYES.wink + MOUTH.grin, PROP.thumb],
+    ['good', '讚啦', 'st-jump', EYES.happy + MOUTH.grin, PROP.thumb],
+    ['mm', '嗯嗯', 'st-bob', EYES.closed + MOUTH.smile, PROP.sparkR],
+    ['sure', '確實', 'st-bob', EYES.dot + MOUTH.smirk, PROP.sparkR],
+    ['noprob', '沒問題', 'st-jump', EYES.wink + MOUTH.grin, PROP.spark, PROP.sparkR],
+    ['okok', '好喔好喔', 'st-wiggle', EYES.happy + MOUTH.smile, PROP.hearts],
+    ['ic', '了解', 'st-bob', EYES.dot + MOUTH.smile, PROP.sparkR],
+    ['gotgot', '收到收到', 'st-bob', EYES.happy + MOUTH.smile, PROP.spark, PROP.sparkR],
+  ]),
+  // 2) 已讀敷衍 — 慵懶藍貓，回得心不在焉（已讀亂回/隨便你…）
+  pack('read', '已讀敷衍', '😑', '#7a8699', BODIES.bluecat, [
+    ['seen', '已讀', 'st-bob-slow', EYES.tired + MOUTH.flat, PROP.phone],
+    ['random', '已讀亂回', 'st-wiggle', EYES.dot + MOUTH.smirk, PROP.phone],
+    ['later', '再說啦', 'st-bob-slow', EYES.tired + MOUTH.flat, PROP.dots],
+    ['ohya', '喔是喔', 'st-bob-slow', EYES.roll + MOUTH.flat, PROP.dots],
+    ['whatever', '隨便你', 'st-sway', EYES.tired + MOUTH.flat, PROP.dots],
+    ['fine', '好啦好啦', 'st-bob-slow', EYES.roll + MOUTH.flat, PROP.dots],
+    ['mmm', '嗯', 'st-breathe', EYES.tired + MOUTH.flat],
+    ['iknow', '知道了啦', 'st-sway', EYES.roll + MOUTH.smirk, PROP.dots],
+    ['anyway', '都可以', 'st-bob-slow', EYES.tired + MOUTH.flat, PROP.phone],
+    ['nvm', '沒差', 'st-sway', EYES.roll + MOUTH.flat, PROP.dots],
+  ]),
+  // 3) 嗆人白爛 — 粗眉小子，直白嗆辣（白爛貓風：歸剛欸/要確欸…）
+  pack('sass', '嗆人白爛', '😤', '#d64545', BODIES.kid, [
+    ['guigang', '歸剛欸', 'st-shake', EYES.angry + MOUTH.gah, PROP.vein],
+    ['quersh', '要確欸', 'st-tilt', EYES.roll + MOUTH.smirk],
+    ['shutup', '閉嘴啦', 'st-shake', EYES.angry + MOUTH.gah, PROP.boltRed],
+    ['notmybiz', '關我屁事', 'st-sway', EYES.roll + MOUTH.smirk, PROP.dots],
+    ['getout', '滾', 'st-shake', EYES.angry + MOUTH.shout, PROP.speedLines, PROP.boltRed],
+    ['sayagain', '你再說', 'st-shake', EYES.angry + MOUTH.gah, PROP.vein],
+    ['sowhat', '不然咧', 'st-tilt', EYES.roll + MOUTH.smirk],
+    ['bs', '屁啦', 'st-shake', EYES.angry + MOUTH.tongue],
+    ['ohreally', '是喔', 'st-sway', EYES.roll + MOUTH.smirk, PROP.dots],
+    ['eyeroll', '翻白眼', 'st-tilt', EYES.roll + MOUTH.flat],
+  ]),
+  // 4) 厭世上班 — 上班章魚，社畜苦悶（想離職/躺平/連滾帶爬…）
+  pack('office', '厭世上班', '😩', '#3f6bd6', BODIES.octopus, [
+    ['quit', '想離職', 'st-bob-slow', EYES.dead + MOUTH.wavy, PROP.laptop],
+    ['nowork', '不想上班', 'st-sway', EYES.tired + MOUTH.frown, PROP.sweat],
+    ['salary', '薪水呢', 'st-bob-slow', EYES.plead + MOUTH.frown + FACEX.tear, PROP.coin],
+    ['leaveme', '放過我', 'st-shake', EYES.dead + MOUTH.wavy, PROP.sweat, PROP.speedLines],
+    ['liedown', '躺平', 'st-breathe', EYES.tired + MOUTH.flat, PROP.zzz],
+    ['crawl', '連滾帶爬', 'st-shake', EYES.dizzy + MOUTH.wavy, PROP.sweat, PROP.speedLines],
+    ['sotired', '好累喔', 'st-breathe', EYES.tired + MOUTH.flat, PROP.zzz],
+    ['ot', '加班中', 'st-sway', EYES.dead + MOUTH.wavy, PROP.moon, PROP.laptop],
+    ['collapse', '崩潰', 'st-shake', EYES.dead + MOUTH.shout, PROP.vein, PROP.sweat],
+    ['done', '厭世', 'st-breathe', EYES.dead + MOUTH.flat, PROP.dots],
+  ]),
+  // 5) 撒嬌愛心 — 美麗貓咪，情侶/朋朋撒嬌（抱抱/接住我/討拍…）
+  pack('love', '撒嬌愛心', '🥰', '#e0679a', BODIES.prettycat, [
+    ['missyou', '想你了', 'st-bob-slow', EYES.shiny + MOUTH.uwu, PROP.hearts],
+    ['hug', '抱抱', 'st-bob', EYES.plead + MOUTH.o, PROP.hearts],
+    ['kiss', '親親', 'st-bob', EYES.wink + MOUTH.kiss, PROP.hearts],
+    ['friend', '朋朋', 'st-jump', EYES.happy + MOUTH.smile, PROP.hearts],
+    ['catchme', '接住我', 'st-jump', EYES.plead + MOUTH.o, PROP.hearts],
+    ['comfort', '討拍', 'st-bob-slow', EYES.plead + MOUTH.wavy + FACEX.tear, PROP.hearts],
+    ['loveyou', '愛你唷', 'st-bob', EYES.heart + MOUTH.smile, PROP.hearts],
+    ['staywme', '陪我嘛', 'st-sway', EYES.plead + MOUTH.uwu, PROP.hearts],
+    ['soothe', '秀秀', 'st-bob-slow', EYES.lash + MOUTH.smile, PROP.hearts],
+    ['mylove', '最愛你', 'st-bob', EYES.heart + MOUTH.uwu, PROP.hearts],
+  ]),
+  // 6) 應援吹捧 — 威武虎虎，浮誇吹捧（太頂了/超派/上車囉…）
+  pack('hype', '應援吹捧', '🙌', '#e0891e', BODIES.tiger, [
+    ['peak', '太頂了', 'st-jump', EYES.starry + MOUTH.d, PROP.crown, PROP.arrowUp],
+    ['hardcore', '超派', 'st-shake', EYES.angry + MOUTH.shout, PROP.fire],
+    ['lol', '笑死', 'st-jump', EYES.happy + MOUTH.d, PROP.spark, PROP.sparkR],
+    ['respect', '尊爆', 'st-bob', EYES.starry + MOUTH.o, PROP.crown],
+    ['amazing', '太神啦', 'st-jump', EYES.starry + MOUTH.shout, PROP.crown, PROP.spark],
+    ['getin', '上車囉', 'st-jump', EYES.happy + MOUTH.grin, PROP.arrowUp, PROP.speedLines],
+    ['topped', '超頂', 'st-jump', EYES.starry + MOUTH.grin, PROP.arrowUp],
+    ['strong', '太猛了', 'st-jump', EYES.shades + MOUTH.grin, PROP.fire],
+    ['praise', '爆讚', 'st-bob', EYES.happy + MOUTH.grin, PROP.thumb, PROP.spark],
+    ['crazy', '狂', 'st-shake', EYES.shades + MOUTH.smirk, PROP.fire, PROP.sparkR],
+  ]),
+  // 7) 祝福問候 — 溫暖小熊，過年/日常問候（早安/新年快樂/辛苦了…）
+  pack('bless', '祝福問候', '✨', '#8a5cd8', BODIES.bear, [
     ['morning', '早安', 'st-bob', EYES.happy + MOUTH.smile, PROP.sun],
     ['night', '晚安', 'st-breathe', EYES.closed + MOUTH.smile, PROP.zzz, PROP.moon],
-    ['thanks', '謝謝你', 'st-bob', EYES.shiny + MOUTH.smile, PROP.hearts],
-    ['okok', '好喔好喔', 'st-bob', EYES.dot + MOUTH.smile, PROP.sparkR],
-    ['noprob', '沒問題！', 'st-jump', EYES.wink + MOUTH.grin, PROP.thumb],
-    ['missyou', '想你了', 'st-bob-slow', EYES.shiny + MOUTH.uwu, PROP.hearts],
-    ['please', '拜託嘛', 'st-bob', EYES.plead + MOUTH.uwu, PROP.spark],
-    ['loveyou', '愛你唷', 'st-bob', EYES.heart + MOUTH.smile, PROP.hearts],
-    ['haha', '哈哈哈', 'st-jump', EYES.happy + MOUTH.grin, PROP.spark, PROP.sparkR],
-    ['okla', 'OK啦', 'st-wiggle', EYES.wink + MOUTH.smile, PROP.sparkR],
+    ['newyear', '新年快樂', 'st-jump', EYES.happy + MOUTH.grin, PROP.confetti, PROP.spark],
+    ['congrats', '恭喜', 'st-jump', EYES.happy + MOUTH.grin, PROP.confetti],
+    ['goodwork', '辛苦了', 'st-bow', EYES.closed + MOUTH.smile, PROP.spark],
+    ['takecare', '保重', 'st-bob', EYES.happy + MOUTH.smile, PROP.hearts],
+    ['fighting', '加油', 'st-jump', EYES.happy + MOUTH.shout, PROP.fists],
+    ['birthday', '生日快樂', 'st-jump', EYES.happy + MOUTH.grin, PROP.cake, PROP.confetti],
+    ['weekend', '週末愉快', 'st-jump', EYES.happy + MOUTH.grin, PROP.confetti, PROP.spark],
+    ['thankyou', '謝謝你', 'st-bob', EYES.shiny + MOUTH.smile, PROP.hearts],
   ]),
-  pack('pretty', '美麗', '🌸', '#b05cc4', BODIES.prettycat, [
-    ['tired2', '辛苦了', 'st-bob-slow', EYES.lash + MOUTH.smile, PROP.spark],
-    ['best', '你最棒', 'st-bob', EYES.wink + MOUTH.smile, PROP.thumb],
-    ['itsok', '沒關係', 'st-bob-slow', EYES.lash + MOUTH.smile, PROP.flower],
-    ['slowly', '慢慢來', 'st-breathe', EYES.closed + MOUTH.smile, PROP.bubbles],
-    ['yourturn', '交給你囉', 'st-wiggle', EYES.wink + MOUTH.smirk, PROP.sparkR],
-    ['busygo', '先去忙囉', 'st-bob', EYES.dot + MOUTH.smile, PROP.phone],
-    ['beauty', '美美的', 'st-sway', EYES.lash + MOUTH.uwu, PROP.flower, PROP.spark],
-    ['later', '晚點聊', 'st-bob-slow', EYES.dot + MOUTH.smile, PROP.phone],
-    ['mmgood', '嗯嗯好', 'st-bob', EYES.closed + MOUTH.smile, PROP.sparkR],
-    ['kiss', '親一個', 'st-bob', EYES.wink + MOUTH.kiss, PROP.hearts],
-  ]),
-  pack('poor', '可憐', '🥺', '#5c85d6', BODIES.hamster, [
-    ['qq', 'QQ', 'st-bob-slow', EYES.plead + MOUTH.wavy + FACEX.tear],
-    ['sorry', '我錯了', 'st-bow', EYES.tired + MOUTH.frown, PROP.sweat],
-    ['hugme', '抱抱我', 'st-bob-slow', EYES.plead + MOUTH.o, PROP.hearts],
-    ['unfair', '好委屈', 'st-bob-slow', EYES.plead + MOUTH.wavy + FACEX.tear, PROP.dots],
-    ['hungry', '餓死了', 'st-shake', EYES.dizzy + MOUTH.wavy, PROP.bowl],
-    ['comfort', '求安慰', 'st-bob-slow', EYES.plead + MOUTH.frown, PROP.hearts],
-    ['dontscold', '別罵我', 'st-shake', EYES.plead + MOUTH.wavy, PROP.sweat, PROP.exclam],
-    ['crycry', '哭哭', 'st-bob-slow', EYES.closed + MOUTH.wavy + FACEX.streams],
-    ['sotired', '好累喔', 'st-breathe', EYES.tired + MOUTH.flat, PROP.zzz],
-    ['nomoney', '沒錢錢', 'st-bob-slow', EYES.plead + MOUTH.frown + FACEX.tear, PROP.coin],
-  ]),
-  pack('mighty', '威武', '🐯', '#d64545', BODIES.tiger, [
-    ['onme', '交給我', 'st-bob', EYES.angry + MOUTH.grin, PROP.fire],
-    ['solid', '穩了！', 'st-bob', EYES.shades + MOUTH.smirk, PROP.thumb],
-    ['charge', '衝啊！', 'st-jump', EYES.angry + MOUTH.shout, PROP.speedLines, PROP.fire],
-    ['fearless', '沒在怕', 'st-wiggle', EYES.shades + MOUTH.smirk, PROP.sparkR],
-    ['gotyou', '罩你', 'st-bob', EYES.dot + MOUTH.grin, PROP.fists],
-    ['shutup', '閉嘴啦', 'st-shake', EYES.angry + MOUTH.flat, PROP.boltRed],
-    ['sostrong', '太猛了', 'st-jump', EYES.shiny + MOUTH.shout, PROP.fire],
-    ['boss2', '霸氣', 'st-sway', EYES.shades + MOUTH.grin, PROP.fire, PROP.spark],
-    ['fighting', '加油！', 'st-jump', EYES.happy + MOUTH.shout, PROP.fists],
-    ['go', '上！', 'st-shake', EYES.angry + MOUTH.shout, PROP.speedLines, PROP.exclam],
-  ]),
-  pack('work', '上班', '🐙', '#2f6fe0', BODIES.octopus, [
-    ['ok', '收到！', 'st-bob', EYES.happy + MOUTH.smile, PROP.sparkR],
-    ['meeting', '開會中', 'st-bob-slow', EYES.tired + MOUTH.flat, PROP.laptop],
-    ['overtime', '加班中', 'st-sway', EYES.dead + MOUTH.wavy, PROP.moon, PROP.sweat],
-    ['busy', '忙到爆', 'st-shake', EYES.dizzy + MOUTH.o, PROP.sweat, PROP.speedLines],
-    ['slack', '摸魚中', 'st-wiggle', EYES.happy + MOUTH.smile, PROP.fish],
-    ['salary', '薪水呢', 'st-bob-slow', EYES.dot + MOUTH.frown + FACEX.tear, PROP.coin],
-    ['offwork', '下班啦！', 'st-jump', EYES.happy + MOUTH.grin, PROP.spark, PROP.sparkR],
-    ['boss', '好的老闆', 'st-bow', EYES.closed + MOUTH.smile, PROP.sweat],
-  ]),
-  pack('rest', '休息', '🐱', '#8a5cd8', BODIES.bluecat, [
-    ['lazy', '耍廢中', 'st-bob-slow', EYES.tired + MOUTH.flat, PROP.phone],
-    ['sleep', '睡了喔', 'st-breathe', EYES.closed + MOUTH.o, PROP.zzz, PROP.moon],
-    ['coffee', '咖啡時間', 'st-bob', EYES.dot + MOUTH.smile, PROP.coffee],
-    ['drama', '追劇中', 'st-bob-slow', EYES.dot + MOUTH.o, PROP.tv],
-    ['blank', '放空', 'st-bob-slow', EYES.dot + MOUTH.flat, PROP.dots],
-    ['weekend', '週末萬歲', 'st-jump', EYES.happy + MOUTH.grin, PROP.confetti, PROP.spark],
-    ['recharge', '充電中', 'st-breathe', EYES.closed + MOUTH.flat, PROP.battery],
-    ['dnd', '別吵我', 'st-shake', EYES.angry + MOUTH.frown, PROP.boltRed],
-  ]),
-  pack('drink', '喝酒', '🐻', '#e0891e', BODIES.bear, [
-    ['cheers', '乾杯！', 'st-wiggle', EYES.happy + MOUTH.grin, PROP.beer, PROP.spark],
-    ['onemore', '再一杯', 'st-bob', EYES.dot + MOUTH.o + FACEX.blushMore, PROP.beer],
-    ['tipsy', '微醺中', 'st-sway', EYES.dizzy + MOUTH.smile + FACEX.blushMore, PROP.bubbles],
-    ['down', '我掛了', 'st-breathe', EYES.dead + MOUTH.wavy, PROP.sweat],
-    ['letsgo', '走！喝酒', 'st-jump', EYES.dot + MOUTH.grin, PROP.beer, PROP.speedLines],
-    ['treat', '我請客', 'st-bob', EYES.shades + MOUTH.smile, PROP.coin],
-    ['strong', '千杯不醉', 'st-wiggle', EYES.shades + MOUTH.grin, PROP.beer],
-    ['tomorrow', '明天再說', 'st-breathe', EYES.tired + MOUTH.flat, PROP.zzz],
-  ]),
-  pack('guys', '男生', '👦', '#16a06a', BODIES.kid, [
-    ['bro', '兄弟！', 'st-jump', EYES.happy + MOUTH.grin, PROP.fists],
-    ['buff', '猛！', 'st-bob', EYES.dot + MOUTH.grin, PROP.dumbbell],
-    ['cool', '帥！', 'st-wiggle', EYES.shades + MOUTH.smile, PROP.sparkR],
-    ['ball', '打球嗎', 'st-bob', EYES.dot + MOUTH.smile, PROP.basketball],
-    ['game', '開黑上分', 'st-shake', EYES.dot + MOUTH.o, PROP.controller],
-    ['broke', '我沒錢', 'st-bob-slow', EYES.dot + MOUTH.frown + FACEX.tear, PROP.coin],
-    ['huh', '蛤？', 'st-tilt', EYES.dot + MOUTH.o, PROP.question],
-    ['nice', '讚啦', 'st-jump', EYES.happy + MOUTH.grin, PROP.thumb],
+  // 8) 疑惑吐槽 — 呆萌鼠鼠，黑人問號吐槽（蛤？/傻眼/是在哈囉…）
+  pack('huh', '疑惑吐槽', '🤨', '#2f7fd6', BODIES.hamster, [
+    ['ha', '蛤？', 'st-tilt', EYES.wide + MOUTH.o, PROP.question],
+    ['wut', '傻眼', 'st-shake', EYES.wide + MOUTH.flat, PROP.qmarks],
+    ['hello', '是在哈囉', 'st-tilt', EYES.wide + MOUTH.o, PROP.qmarks],
+    ['answerme', '回答我', 'st-shake', EYES.angry + MOUTH.shout, PROP.exclam],
+    ['broken', '我裂開', 'st-shake', EYES.dead + MOUTH.wavy + FACEX.crack],
+    ['speechless', '無言', 'st-bob-slow', EYES.tired + MOUTH.flat, PROP.dots],
+    ['srsly', '認真？', 'st-tilt', EYES.wide + MOUTH.flat, PROP.question],
+    ['whatt', '蝦毀', 'st-shake', EYES.wide + MOUTH.o, PROP.qmarks],
+    ['bigwut', '傻爆眼', 'st-shake', EYES.wide + MOUTH.o, PROP.qmarks, PROP.exclam],
+    ['ureal', '你認真', 'st-tilt', EYES.roll + MOUTH.flat, PROP.question],
   ]),
 ];
 
