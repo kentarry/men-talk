@@ -2,6 +2,7 @@
 // so a sticker message only carries its id (tiny, E2EE-friendly); received ids
 // are used purely as lookup keys and never interpreted as markup.
 //
+// Each pack has its own original character (octopus / blue cat / bear / kid).
 // Animation: parts carry st-* classes; the keyframes live in styles.css and
 // only apply where the SVG is inline in the DOM (chat bubbles + picker).
 // prefers-reduced-motion users get static stickers via the global CSS rule.
@@ -10,12 +11,39 @@ const INK = '#2b2b2b';
 const line = (w, c = INK) =>
   `fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round"`;
 
-// ---- the character: a round yellow blob with swappable face parts ----------
+const blush = (x1, x2, y) =>
+  `<circle cx="${x1}" cy="${y}" r="6" fill="#ff9a9a" opacity=".5"/><circle cx="${x2}" cy="${y}" r="6" fill="#ff9a9a" opacity=".5"/>`;
 
-const BLOB =
-  `<ellipse cx="60" cy="52" rx="37" ry="33" fill="#ffd66e"/>` +
-  `<circle cx="34" cy="59" r="6" fill="#ff9a9a" opacity=".5"/>` +
-  `<circle cx="86" cy="59" r="6" fill="#ff9a9a" opacity=".5"/>`;
+// ---- pack characters (faces plug in around eyes y≈47 / mouth y≈60-68) -------
+
+const BODIES = {
+  // 章魚：圓頭 + 波浪裙擺觸手
+  octopus:
+    `<ellipse cx="60" cy="44" rx="34" ry="27" fill="#ff8e7d"/>` +
+    `<path d="M28 58 h64 v8 q0 10 -8 10 q-8 0 -8 -8 q0 8 -8 8 q-8 0 -8 -8 q0 8 -8 8 q-8 0 -8 -8 q0 8 -8 8 q-8 0 -8 -10 Z" fill="#ff8e7d"/>` +
+    `<circle cx="44" cy="72" r="2" fill="#e06a58"/><circle cx="60" cy="74" r="2" fill="#e06a58"/><circle cx="76" cy="72" r="2" fill="#e06a58"/>` +
+    blush(37, 83, 54),
+  // 藍色小貓：圓耳朵 + 額頭條紋
+  cat:
+    `<circle cx="40" cy="26" r="9" fill="#8fd0f2"/><circle cx="80" cy="26" r="9" fill="#8fd0f2"/>` +
+    `<ellipse cx="60" cy="54" rx="36" ry="32" fill="#8fd0f2"/>` +
+    `<path d="M52 26 v7 M60 24 v8 M68 26 v7" ${line(3, '#5fb0dd')}/>` +
+    blush(34, 86, 60),
+  // 小熊：圓耳朵 + 淺色口鼻
+  bear:
+    `<circle cx="35" cy="25" r="10" fill="#c68d5c"/><circle cx="85" cy="25" r="10" fill="#c68d5c"/>` +
+    `<circle cx="35" cy="25" r="5" fill="#e8c49a"/><circle cx="85" cy="25" r="5" fill="#e8c49a"/>` +
+    `<ellipse cx="60" cy="54" rx="36" ry="32" fill="#c68d5c"/>` +
+    `<ellipse cx="60" cy="63" rx="13" ry="9.5" fill="#e8c49a"/>` +
+    `<ellipse cx="60" cy="56" rx="4.5" ry="3.5" fill="#5c3a22"/>` +
+    blush(33, 87, 60),
+  // 調皮小子：粗眉 + 短瀏海
+  kid:
+    `<ellipse cx="60" cy="54" rx="33" ry="31" fill="#ffd9b3"/>` +
+    `<path d="M27 48 a33 28 0 0 1 66 0" fill="none" stroke="#4a332a" stroke-width="11" stroke-linecap="round"/>` +
+    `<path d="M38 37 q9 -4 18 1 M82 37 q-9 -4 -18 1" ${line(4.5, '#4a332a')}/>` +
+    blush(36, 84, 60),
+};
 
 const EYES = {
   dot: `<circle cx="47" cy="47" r="4.5" fill="${INK}"/><circle cx="73" cy="47" r="4.5" fill="${INK}"/>`,
@@ -24,7 +52,7 @@ const EYES = {
   tired: `<path d="M41 47 h12" ${line(4)}/><path d="M67 47 h12" ${line(4)}/>`,
   dead: `<path d="M42 42 l10 10 M52 42 l-10 10" ${line(3.5)}/><path d="M68 42 l10 10 M78 42 l-10 10" ${line(3.5)}/>`,
   dizzy: `<g class="st-spin"><path d="M51 47 a4.5 4.5 0 1 1 -4.5 -4.5 a3 3 0 1 0 3 3" ${line(3)}/></g><g class="st-spin"><path d="M77 47 a4.5 4.5 0 1 1 -4.5 -4.5 a3 3 0 1 0 3 3" ${line(3)}/></g>`,
-  angry: `<path d="M39 38 l14 5 M81 38 l-14 5" ${line(3.5)}/><circle cx="47" cy="49" r="4" fill="${INK}"/><circle cx="73" cy="49" r="4" fill="${INK}"/>`,
+  angry: `<path d="M39 40 l14 4 M81 40 l-14 4" ${line(3.5)}/><circle cx="47" cy="50" r="4" fill="${INK}"/><circle cx="73" cy="50" r="4" fill="${INK}"/>`,
   shades: `<path d="M28 41 h64" ${line(3.5, '#20242c')}/><rect x="36" y="40" width="20" height="13" rx="5" fill="#20242c"/><rect x="64" y="40" width="20" height="13" rx="5" fill="#20242c"/>`,
 };
 
@@ -40,7 +68,7 @@ const MOUTH = {
 // Face-attached extras: concatenated into the eyes/mouth slot so they ride
 // along with the body animation (they sit ON the face).
 const FACEX = {
-  blushMore: `<circle cx="34" cy="59" r="8" fill="#ff8a8a" opacity=".6"/><circle cx="86" cy="59" r="8" fill="#ff8a8a" opacity=".6"/>`,
+  blushMore: `<circle cx="36" cy="59" r="8" fill="#ff8a8a" opacity=".6"/><circle cx="84" cy="59" r="8" fill="#ff8a8a" opacity=".6"/>`,
   tear: `<g class="st-drip"><path d="M45 55 q6 9 0 14 q-6 -5 0 -14" fill="#6fb9ff"/></g>`,
 };
 
@@ -102,7 +130,7 @@ const PROP = {
     `<g class="st-pop"><g transform="translate(88 58)"><rect x="-9" y="-1" width="21" height="18" rx="6" fill="#ffc84d" stroke="#c9962e" stroke-width="2.5"/>` +
     `<rect x="-6" y="-16" width="9" height="19" rx="4.5" fill="#ffc84d" stroke="#c9962e" stroke-width="2.5" transform="rotate(-16)"/></g></g>`,
   fists:
-    `<g class="st-pop"><g transform="translate(60 14)"><rect x="-31" y="-6" width="19" height="15" rx="6.5" fill="#ffc84d" stroke="#c9962e" stroke-width="2.5"/>` +
+    `<g class="st-pop"><g transform="translate(60 12)"><rect x="-31" y="-6" width="19" height="15" rx="6.5" fill="#ffc84d" stroke="#c9962e" stroke-width="2.5"/>` +
     `<rect x="12" y="-6" width="19" height="15" rx="6.5" fill="#ffc84d" stroke="#c9962e" stroke-width="2.5"/>` +
     `<path d="M-5 -8 l3 4 M0 -10 v5 M5 -8 l-3 4" ${line(2.5, '#ffd23e')}/></g></g>`,
   question: `<g class="st-pop"><text x="94" y="34" font-size="30" font-weight="900" fill="#e0554e">?</text></g>`,
@@ -110,12 +138,12 @@ const PROP = {
 
 // ---- sticker builder --------------------------------------------------------
 
-function art(label, color, bodyAnim, parts) {
+function art(label, color, body, bodyAnim, parts) {
   const fs = label.length >= 4 ? 19 : 22;
   const [face, ...ambient] = parts;
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120" role="img" aria-hidden="true">` +
-    `<g class="${bodyAnim}">` + BLOB + face + `</g>` +
+    `<g class="${bodyAnim}">` + body + face + `</g>` +
     ambient.join('') +
     `<text x="60" y="112" text-anchor="middle" font-size="${fs}" font-weight="900"` +
     ` font-family="'PingFang TC','Heiti TC','Microsoft JhengHei','Noto Sans TC',sans-serif"` +
@@ -124,11 +152,11 @@ function art(label, color, bodyAnim, parts) {
   );
 }
 
-function pack(id, name, icon, color, defs) {
+function pack(id, name, icon, color, body, defs) {
   return {
     id, name, icon,
     stickers: defs.map(([key, label, bodyAnim, face, ...ambient]) => ({
-      id: `${id}.${key}`, label, svg: art(label, color, bodyAnim, [face, ...ambient]),
+      id: `${id}.${key}`, label, svg: art(label, color, body, bodyAnim, [face, ...ambient]),
     })),
   };
 }
@@ -137,7 +165,7 @@ function pack(id, name, icon, color, defs) {
 // def: [key, label, bodyAnim, face(eyes+mouth+face-extras), ...ambient props]
 
 export const STICKER_PACKS = [
-  pack('work', '上班用', '💼', '#2f6fe0', [
+  pack('work', '上班用', '🐙', '#2f6fe0', BODIES.octopus, [
     ['ok', '收到！', 'st-bob', EYES.happy + MOUTH.smile, PROP.sparkR],
     ['meeting', '開會中', 'st-bob-slow', EYES.tired + MOUTH.flat, PROP.laptop],
     ['overtime', '加班中', 'st-sway', EYES.dead + MOUTH.wavy, PROP.moon, PROP.sweat],
@@ -147,7 +175,7 @@ export const STICKER_PACKS = [
     ['offwork', '下班啦！', 'st-jump', EYES.happy + MOUTH.grin, PROP.spark, PROP.sparkR],
     ['boss', '好的老闆', 'st-bow', EYES.closed + MOUTH.smile, PROP.sweat],
   ]),
-  pack('rest', '休息用', '☕', '#8a5cd8', [
+  pack('rest', '休息用', '🐱', '#8a5cd8', BODIES.cat, [
     ['lazy', '耍廢中', 'st-bob-slow', EYES.tired + MOUTH.flat, PROP.phone],
     ['sleep', '晚安', 'st-breathe', EYES.closed + MOUTH.o, PROP.zzz, PROP.moon],
     ['coffee', '咖啡時間', 'st-bob', EYES.dot + MOUTH.smile, PROP.coffee],
@@ -157,7 +185,7 @@ export const STICKER_PACKS = [
     ['recharge', '充電中', 'st-breathe', EYES.closed + MOUTH.flat, PROP.battery],
     ['dnd', '別吵我', 'st-shake', EYES.angry + MOUTH.frown, PROP.boltRed],
   ]),
-  pack('drink', '喝酒用', '🍺', '#e0891e', [
+  pack('drink', '喝酒用', '🐻', '#e0891e', BODIES.bear, [
     ['cheers', '乾杯！', 'st-wiggle', EYES.happy + MOUTH.grin, PROP.beer, PROP.spark],
     ['onemore', '再一杯', 'st-bob', EYES.dot + MOUTH.o + FACEX.blushMore, PROP.beer],
     ['tipsy', '微醺中', 'st-sway', EYES.dizzy + MOUTH.smile + FACEX.blushMore, PROP.bubbles],
@@ -167,7 +195,7 @@ export const STICKER_PACKS = [
     ['strong', '千杯不醉', 'st-wiggle', EYES.shades + MOUTH.grin, PROP.beer],
     ['tomorrow', '明天再說', 'st-breathe', EYES.tired + MOUTH.flat, PROP.zzz],
   ]),
-  pack('guys', '男生用', '💪', '#16a06a', [
+  pack('guys', '男生用', '👦', '#16a06a', BODIES.kid, [
     ['bro', '兄弟！', 'st-jump', EYES.happy + MOUTH.grin, PROP.fists],
     ['buff', '猛！', 'st-bob', EYES.dot + MOUTH.grin, PROP.dumbbell],
     ['cool', '帥！', 'st-wiggle', EYES.shades + MOUTH.smile, PROP.sparkR],
